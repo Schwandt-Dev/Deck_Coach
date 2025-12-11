@@ -61,7 +61,6 @@ def goldfish(path):
                     print('You Win!!')
                     log_game(path, 'Win', turn_count, kept, lands, mulled_lands)
                     gen_game_summary(path, 'won', turn_count)
-                    survey(old_path, turn_count, 'Won')
                     return
                 continue
             elif choice == 2:
@@ -71,42 +70,13 @@ def goldfish(path):
                 print('You Win!!')
                 log_game(path, 'Win', turn_count, kept, lands, mulled_lands)
                 gen_game_summary(path, 'won', turn_count)
-                survey(old_path, turn_count, 'Win')
                 return
         print('You lose :(')
         log_game(path, 'Loss', turn_count, kept, lands, mulled_lands)
         gen_game_summary(path, 'lost', turn_count)
-        survey(old_path, turn_count, 'Loss')
         return
     
-def survey(path, turn_count, worl):
-    deck_path = path + '/Deck_list.json'
-    try:
-        with open(deck_path, 'r') as file:
-            deck = json.load(file)
-        deck_list = deck['card_list']
-        for i in range(len(deck_list)):
-            if deck_list[i]['tracked'] == True:
-                if worl == 'Loss':
-                    deck_list[i]['tracked_stats']['wins'].append(0)
-                else:
-                    deck_list[i]['tracked_stats']['wins'].append(1)
-                    deck_list[i]['tracked_stats']['win_turns'].append(turn_count)
-                card_name = deck_list[i]['name']
-                print(f'Did you play with {card_name} this game?')
-                print('1 ) Yes')
-                print('ENTER No')
-                if vet_user_num('') == 1:
-                    
-                    print(f'How satisfied were you with the perfomance of {card_name} this game?')
-                    rating = vet_user_num('Enter a number 1-5: ')
-                    if rating > 0 and rating < 6:
-                        deck_list[i]['tracked_stats']['survey'].append(rating)
 
-        with open(deck_path, 'w') as file:
-            json.dump(deck, file, indent=4)
-    except:
-        print('Unable to open deck list file.')
 
 
 

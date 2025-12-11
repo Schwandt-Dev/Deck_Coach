@@ -27,10 +27,10 @@ def toggle_tracking(card_name, card_list):
         if card_list[i]['name'] == card_name:
             if card_list[i]['tracked'] == True:
                 card_list[i]['tracked'] = False
-                print(f'{card_name} has been deselected for tracking.')
+                print(f'{card_list[i]['name']} has been deselected for tracking.')
             else:
                 card_list[i]['tracked'] = True
-                print(f'{card_name} has been set for tracking.')
+                print(f'{card_list[i]['name']} has been set for tracking.')
                 wins = []
                 win_turns = []
                 survey = []
@@ -38,3 +38,5 @@ def toggle_tracking(card_name, card_list):
                 card_list[i]['tracked_stats']['wins'] = wins
                 card_list[i]['tracked_stats']['win_turns'] = win_turns
                 card_list[i]['tracked_stats']['survey'] = survey
+
+

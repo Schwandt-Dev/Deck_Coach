@@ -8,10 +8,14 @@ import Track_card
 
 
 ####################################################################################
-    # add survey at the end of life counter
-    # add option to compare tracked card with another card.
-        # add option to replace tracked card with card being compared against 
-### add method in view stats to view the status of tracked cards
+    # add method in view stats to view the stats of tracked cards
+    # add chopping block file
+        # all cards start on the chopping block
+        # cards with shoutouts are removed 
+        # lands are removed
+        # cards with least tags will rank highest on the chopping block
+            # sub sort by cost high to low
+        # identify veggies (card draw, removal) and remove from the chopping block
 ####################################################################################
 
 # Returns an integer value of a user input, positive number.   
@@ -33,9 +37,8 @@ def deck_menu_loop(path):
         print('2 ) Life Counter')
         print('3 ) View Stats')
         print('4 ) Manage Deck List')
-        print('5 ) Track Cards')
-        print('6 ) Back')
-        print('7 ) Delete Deck')
+        print('5 ) Back')
+        print('6 ) Delete Deck')
 
                   
         choice = vet_user_num('')     
@@ -45,17 +48,29 @@ def deck_menu_loop(path):
             Playtest.playtest(path)
         elif choice == 3:
             View_Stats.view_stats(path)
-        elif choice == 6:
+        elif choice == 5:
             return
-        elif choice == 7:
+        elif choice == 6:
             choice = vet_user_num(f'Are you sure you would like to delete {path}?\n1 ) Yes\n2 ) No\n')
             if choice == 1:
                 shutil.rmtree(path)
                 return
         elif choice == 4:
-          Cards_stats.get_cards(path) 
-        elif choice == 5:
-            Track_card.set_tracking(path) 
+            print('1 ) View card list')
+            print('2 ) Add cards')
+            print('3 ) Edit cards')
+            print('4 ) Track cards')
+            choice = vet_user_num('')
+            if choice == 2:
+                Cards_stats.get_cards(path)
+            elif choice == 1:
+                Cards_stats.view_decklist(path) 
+            elif choice == 3:
+                Cards_stats.edit_card(path)
+            elif choice == 4:
+                Track_card.set_tracking(path)
+             
+            
 
 #prints main menu options
 #create new deck and enter selected deck menu                       

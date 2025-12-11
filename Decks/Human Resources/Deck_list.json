@@ -5,6 +5,7 @@
             "cost": 4,
             "tags": [
                 "commander",
+<<<<<<< HEAD
                 "death trigger",
                 "reanimator"
             ],
@@ -1359,5 +1360,17 @@
         "tutor",
         "stax",
         "land"
+=======
+                "reanimator",
+                "death pay off"
+            ],
+            "tracked": false
+        }
+    ],
+    "tags": [
+        "death pay off",
+        "reanimator",
+        "commander"
+>>>>>>> master
     ]
 }

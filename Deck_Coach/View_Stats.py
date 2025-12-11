@@ -27,11 +27,12 @@ def view_stats(path):
             except:
                 print('Unable to open game stats file')
 
-            sessions = len(stats_list)
             turn_list = []
             wins = 0
             lands_list = []
             cards_list = []
+            wturn_list = []
+            lturn_list = []
 
             for i in range(len(stats_list)):
                 turn_list.append(stats_list[i]['turn'])
@@ -39,20 +40,48 @@ def view_stats(path):
                 cards_list.append(stats_list[i]['cards'])
                 if stats_list[i]['win'] == True:
                     wins += 1
+                    wturn_list.append(stats_list[i]['turn'])
+                else:
+                    lturn_list.append(stats_list[i]['turn'])
 
             #lands per game
             if choice == 1:
-                print(lands_list)
-            elif choice == 2:
-                print('todo')
+                print_lands_per_game(lands_list)
+            #game length
+            elif choice == 2: 
+                try:
+                    turn_average = sum(turn_list) / len(turn_list)
+                    print(f'\nYour average game will last {turn_average} turns\nAnd will end most often on turn {statistics.mode(turn_list)}\n')
+                except:
+                    print('No games played')
+                try:
+                    wturn_average = sum(wturn_list) / len(wturn_list)
+                    print(f'\nYour average win happens on turn {wturn_average}\n And you win most often on turn {statistics.mode(wturn_list)}\n')
+                except:
+                    print('Zero wins bro, maybe try harder')
+                try:
+                    lturn_average = sum(lturn_list) / len(lturn_list)
+                    print(f'\nYour average loss happens on turn {lturn_average}\nAnd you lose most often on turn {statistics.mode(lturn_list)}\n')
+                except:
+                    print('See no L\'s, take no L\'s')
+            #win rate
             elif choice == 3:
-                print('todo')
+                try:
+                    win_rate = (wins / len(stats_list)) * 100
+                    print(f'\nYour current win rate is %{win_rate}\n')
+                except:
+                    print('%0 win rate :(')
+            #cards drawn
             elif choice == 4:
-                print('todo')
-
+                try:
+                    average_cards = sum(cards_list) / len(cards_list)
+                    print(f'\nDurring your average game you will draw {average_cards} cards\nAnd in most games you will have drawn {statistics.mode(cards_list)} cards.\n')
+                except:
+                    print('You haven\'t drawn any cards. I\'m sure that\'s part of the plan')
+                    
 def print_lands_per_game(lands):
     lands_average = sum(lands) / len(lands)
-    print(f'Durring your average game you will play {lands_average} and in most games you will have played {statistics.mode(lands)}')
+    print(f'\nDurring your average game you will play {lands_average} and in most games you will have played {statistics.mode(lands)} lands\n')
 
 
 def gf_stats_menu(path):
