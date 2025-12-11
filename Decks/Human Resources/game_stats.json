@@ -1,0 +1,10 @@
+[
+    {
+        "turn": 3,
+        "life": 40,
+        "exp": 0,
+        "cards": 0,
+        "lands": 0,
+        "win": true
+    }
+]

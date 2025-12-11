@@ -1,0 +1,19 @@
+{
+    "card_list": [
+        {
+            "name": "meren of clan nel toth",
+            "cost": 4,
+            "tags": [
+                "commander",
+                "reanimator",
+                "death pay off"
+            ],
+            "tracked": false
+        }
+    ],
+    "tags": [
+        "death pay off",
+        "reanimator",
+        "commander"
+    ]
+}
