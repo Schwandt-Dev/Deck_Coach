@@ -9,6 +9,9 @@ import auto_update
 
 
 ####################################################################################
+    # Walk user through setting up git account so they can recieve updates (optional) from git 
+    # or store data locally.
+    # convert to exe so we can click run instead of relying on users installing python 12
     # add method in view stats to view the stats of tracked cards
     # add chopping block file
         # all cards start on the chopping block
@@ -76,7 +79,7 @@ def deck_menu_loop(path):
 #prints main menu options
 #create new deck and enter selected deck menu                       
 def main_menu_loop():
-    print('Welcome to Deck Coach')
+    
     print('Select one of the following to continue:')
     print('1 ) New Deck') 
     path = '../Decks/' #set base path
@@ -123,7 +126,8 @@ def get_sessions(path, c):
         print(f'\nError\nUnable to find file {path}\nIf you have not yet entered goldfish or game stats no file will exist\n')
         exit(0)
 
-
-while True:
+if __name__ == "__main__":
     auto_update.check_for_updates()
-    main_menu_loop() 
+    print('Welcome to Deck Coach')
+    while True:
+        main_menu_loop() 

@@ -21,7 +21,8 @@ def check_for_updates():
         if choice == "y":
             print("Updating...")
             origin.pull("main")
-            print("Update complete!\n")
+            print("Update complete! Restart application to apply changes\n")
+            exit(0)
         else:
             print("Skipping update.\n")
     else:
