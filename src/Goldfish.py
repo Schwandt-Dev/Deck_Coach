@@ -15,7 +15,6 @@ def goldfish(path):
    
     choice = vet_user_num('')               
     print('Let\'s shuffle up and draw 7, good luck!')
-    old_path = path
    
     if choice == 1:    
         path = path + '/goldfish_hands.txt'
@@ -75,10 +74,6 @@ def goldfish(path):
         log_game(path, 'Loss', turn_count, kept, lands, mulled_lands)
         gen_game_summary(path, 'lost', turn_count)
         return
-    
-
-
-
 
 
 def write_tbt(path, tbt_list):

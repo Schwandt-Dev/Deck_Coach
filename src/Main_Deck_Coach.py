@@ -5,6 +5,7 @@ import View_Stats
 import Cards_stats
 import Playtest
 import Track_card
+import auto_update
 
 
 ####################################################################################
@@ -124,4 +125,5 @@ def get_sessions(path, c):
 
 
 while True:
+    auto_update.check_for_updates()
     main_menu_loop() 
