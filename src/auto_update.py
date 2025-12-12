@@ -9,9 +9,9 @@ def check_for_updates():
     origin = repo.remotes.origin
 
     # Fetch latest info from GitHub (does NOT modify local files)
-    origin.fetch()
+    origin.fetch("main")
 
-    local_commit = repo.head.commit
+    local_commit = repo.commit("main")
     remote_commit = repo.commit("origin/main")
 
     if local_commit.hexsha != remote_commit.hexsha:
@@ -20,7 +20,7 @@ def check_for_updates():
 
         if choice == "y":
             print("Updating...")
-            origin.pull()
+            origin.pull("main")
             print("Update complete!\n")
         else:
             print("Skipping update.\n")
