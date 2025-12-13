@@ -1,7 +1,7 @@
 from git import Repo
 
 # Path to your local git repository
-repo_path = r"C:/dev/Deck_Coach/"
+repo_path = "../"
 
 
 def check_for_updates():
