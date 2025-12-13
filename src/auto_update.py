@@ -37,24 +37,31 @@ def check_for_updates():
 def download_update(url):
     exe_path = sys.executable
     tmp_path = exe_path + ".new"
+    bat_path = exe_path + ".update.bat"
 
+    # Download new exe
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with open(tmp_path, "wb") as f:
             for chunk in r.iter_content(8192):
                 f.write(chunk)
 
-    # Replace exe safely using a restart trick
+    # Write updater batch file
+    with open(bat_path, "w") as f:
+        f.write(f"""@echo off
+echo Updating application...
+ping 127.0.0.1 -n 3 > nul
+move /y "{tmp_path}" "{exe_path}"
+start "" "{exe_path}"
+del "%~f0"
+""")
+
+    # Run updater
     subprocess.Popen(
-        [
-            "cmd",
-            "/c",
-            "timeout /t 1 > nul && "
-            f"move /y \"{tmp_path}\" \"{exe_path}\" && "
-            f"start \"\" \"{exe_path}\""
-        ],
-        shell=True
+        ["cmd.exe", "/c", bat_path],
+        creationflags=subprocess.CREATE_NEW_CONSOLE
     )
 
-    sys.exit()
+    # Exit app so EXE unlocks
+    sys.exit(0)
 
