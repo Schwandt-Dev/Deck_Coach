@@ -64,7 +64,6 @@ def edit_card(path):
             saved_tags = deck['tags']
             deck_list = deck['card_list']
         while True:
-            print(saved_tags)
             card = input('Enter the name of a card to edit or q to quit: ')
             card = card.lower()
             if card == 'q':
@@ -117,9 +116,9 @@ def edit_card(path):
             json.dump(deck, file, indent=4)
 
 
-    except Exception as e:
+    except:
         print('Unable to read deck list file. Manage deck list and import cards first.')
-        print(e)
+        
 
 def cleanup_tags(deck_list):
     tag_set = set()
