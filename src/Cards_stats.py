@@ -64,6 +64,7 @@ def edit_card(path):
             saved_tags = deck['tags']
             deck_list = deck['card_list']
         while True:
+            print(saved_tags)
             card = input('Enter the name of a card to edit or q to quit: ')
             card = card.lower()
             if card == 'q':
@@ -104,24 +105,27 @@ def edit_card(path):
                     elif choice == 4:
                         new_copies = vet_user_num('How many copies are in your deck? ')
                         deck_list[i]['copies'] = new_copies
-                        deck['tags'] = cleanup_tags(deck_list)
+                        saved_tags = cleanup_tags(deck_list)
+                        
                     elif choice == 9:
                         del(deck_list[i])
-                        deck['tags'] = cleanup_tags(deck_list)
+                        saved_tags = cleanup_tags(deck_list)
+                    
 
         with open(path + '/Deck_list.json', 'w') as file:
+            deck['tags'] = saved_tags
             json.dump(deck, file, indent=4)
 
 
-    except:
+    except Exception as e:
         print('Unable to read deck list file. Manage deck list and import cards first.')
+        print(e)
 
 def cleanup_tags(deck_list):
-    tag_list = []
+    tag_set = set()
     for i in range(len(deck_list)):
-        tag_list = set(tag_list + deck_list[i]['tags'])
-    print(tag_list)
-    return tag_list
+        tag_set.update(deck_list[i]['tags'])
+    return list(sorted(tag_set))
 
 def view_decklist(path):
     print('')

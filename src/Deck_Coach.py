@@ -9,9 +9,6 @@ import auto_update
 
 
 ####################################################################################
-    # Walk user through setting up git account so they can recieve updates (optional) from git 
-    # or store data locally.
-    # convert to exe so we can click run instead of relying on users installing python 12
     # add method in view stats to view the stats of tracked cards
     # add chopping block file
         # all cards start on the chopping block
@@ -60,19 +57,23 @@ def deck_menu_loop(path):
                 shutil.rmtree(path)
                 return
         elif choice == 4:
-            print('1 ) View card list')
-            print('2 ) Add cards')
-            print('3 ) Edit cards')
-            print('4 ) Track cards')
-            choice = vet_user_num('')
-            if choice == 2:
-                Cards_stats.get_cards(path)
-            elif choice == 1:
-                Cards_stats.view_decklist(path) 
-            elif choice == 3:
-                Cards_stats.edit_card(path)
-            elif choice == 4:
-                Track_card.set_tracking(path)
+            while True:
+                print('1 ) View card list')
+                print('2 ) Add cards')
+                print('3 ) Edit cards')
+                print('4 ) Track cards')
+                print('5 ) Back')
+                choice = vet_user_num('')
+                if choice == 2:
+                    Cards_stats.get_cards(path)
+                elif choice == 1:
+                    Cards_stats.view_decklist(path) 
+                elif choice == 3:
+                    Cards_stats.edit_card(path)
+                elif choice == 4:
+                    Track_card.set_tracking(path)
+                elif choice == 5:
+                    break
              
             
 
@@ -128,6 +129,6 @@ def get_sessions(path, c):
 
 if __name__ == "__main__":
     auto_update.check_for_updates()
-    print('Welcome to Deck Coach Version!')
+    print('Welcome to Deck Coach Version 1.0.0!')
     while True:
         main_menu_loop() 
