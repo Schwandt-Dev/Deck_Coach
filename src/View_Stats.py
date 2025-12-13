@@ -4,13 +4,20 @@ import json
 def view_stats(path):
     print('Let\'s compile our results and see what we collected!')
     while True:
-        print('What kind of stats would you like to view?\n1 ) Goldfish Stats\n2 ) Game Stats\n3 ) Tracked Card Stats\n4 ) Back')
+        print('What kind of stats would you like to view?')
+        print('1 ) Goldfish Stats')
+        print('2 ) Game Stats')
+        print('3 ) Tracked Card Stats')
+        print('4 ) Back')
+
         choice = vet_user_num('')
         if choice == 4:
             break    
         elif choice == 1:
             gf_stats_menu(path)
-            
+        elif choice == 3:
+            view_tracked_card_stats(path)
+
         elif choice == 2:
             gs_path = path + '/game_stats.json'
             print('Select an option to view your game stats.')
@@ -209,3 +216,70 @@ def vet_user_num(string):
             return int(user_num)                             
                                      
 
+def view_tracked_card_stats(path):
+
+    path = path + '/Deck_list.json'
+    try:
+        with open(path, 'r') as file:
+            deck = json.load(file)
+            deck_list = deck['card_list']
+    except:
+        print('Unable to open deck list file')
+
+    tracked_list = []
+
+    for card in deck_list:
+        if card['tracked'] == True:
+            tracked_list.append(card)
+
+    while True:
+        print('What card would you like to view stats for?')
+
+        for i in range(len(tracked_list)):
+            print(f'{i + 1} ) {tracked_list[i]['name']}')
+        print(f'{len(tracked_list) + 1} ) Back')
+
+        choice = vet_user_num('') - 1
+
+        if choice == len(tracked_list):
+            break
+
+        print(f'{tracked_list[choice]['name']} Selected!')
+
+        while True:
+            print('1 ) Win Rate')
+            print('2 ) Win Turn')
+            print('3 ) Vibes')
+            print('4 ) Back')
+            
+            choice2 = vet_user_num('')
+
+            if choice2 == 1:
+                wins_list = tracked_list[choice]['tracked_stats']['wins']
+                try:
+                    wins_average = sum(wins_list) / len(wins_list)
+                    print(f'Your current win rate with {tracked_list[choice]['name']} is {wins_average * 100}')
+                except:
+                    print(f'No wins with {tracked_list[choice]['name']}')
+            elif choice2 == 2:
+                win_turn_list = tracked_list[choice]['tracked_stats']['win_turns']
+                try:
+                    win_turn_average = sum(win_turn_list) / len(win_turn_list)
+                    print(f'In a given game that win and play {tracked_list[choice]['name']}, you win by turn {win_turn_average} on average')
+                    print(f'And by turn {statistics.mode(win_turn_list)} most often')
+                except:
+                    print(f'No wins with {tracked_list[choice]['name']}')
+            elif choice2 == 3:
+                survey_list = tracked_list[choice]['tracked_stats']['survey']
+                try:
+                    survey_average = sum(survey_list) / len(survey_list)
+                    print(f'On a scale of 1-5 you rate {tracked_list[choice]['name']} as a {survey_average} on average')
+                    print(f'And as a {statistics.mode(survey_list)} most often')
+                except:
+                    print(f'No games played with {tracked_list[choice]['name']}')
+            elif choice2 == 4:
+                break
+
+
+        
+        
