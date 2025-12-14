@@ -27,11 +27,7 @@ def on_update_func():
         print('THERE CAN ONLY BE ONE\nIf you already have a file or folder named Deck_Coach remove it and restart the application')
     pass
 ############################### CHANGE LOG #########################################
-    # Added functionality to subract from exp, lands, and turn counters in life 
-    # counter
-    # Added option to quit without saving from life counter 'q' 
-    # Added global versioning
-    # Added update and harm message
+   
 ####################################################################################
 
 ################################## TODO ############################################
@@ -45,9 +41,6 @@ def on_update_func():
     # add feature to view games played in Deck Coach 
         #need to be able to delete bad stats that might be stored in game stats
     # use json for goldfish stats
-    # fix file structure Deck_Coach.exe should create a directory and move itself to
-    # that directory.
-    # remove the need for user to create 2 nested files before install.
 ####################################################################################
 
 # Returns an integer value of a user input, positive number.   
