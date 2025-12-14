@@ -11,28 +11,50 @@ def playtest(path):
     lands = 0
     win = False
 
+    sub = False
+
     while True:
-        print(f't) Turn        {turn_count}\nL/+/-) Life   {life}\nd) Cards Drawn {cards_drawn}\ne) Exp         {exp_cnt}\nl) Lands       {lands}\nw) Win\nf) Lose\n')
+        print(f'3) Turn        {turn_count}')
+        print(f'1/2)  Life     {life}')
+        print(f'5) Cards Drawn {cards_drawn}')
+        print(f'4) Exp         {exp_cnt}')
+        print(f'6) Lands       {lands}')
+        print(f'7) Win\n8) Lose\n')
+        print('0) Toggle counter subtract mode')
             
         interact = msvcrt.getch()
+
+        
             
-        if interact.decode() == 't':
-            turn_count += 1
+        if interact.decode() == 't' or interact.decode() == '3':
+            if sub == False:
+                turn_count += 1
+            else: turn_count -= 1
         elif interact.decode() == '+' or interact.decode() == '2':
             life += 1
         elif interact.decode() == '-' or interact.decode() == '1':
             life -= 1
-        elif interact.decode() == 'e':
-            exp_cnt += 1
-        elif interact.decode() == 'd':
-          cards_drawn += 1
-        elif interact.decode() == 'l':
-            lands += 1
-        elif interact.decode() == 'w':
+        elif interact.decode() == 'e' or interact.decode() == '4':
+            if sub == False:
+                exp_cnt += 1
+            else: exp_cnt -= 1
+        elif interact.decode() == 'd' or interact.decode() == '5':
+            if sub == False:
+                cards_drawn += 1
+            else: cards_drawn -= 1
+        elif interact.decode() == 'l' or interact.decode() == '6':
+            if sub == False:    
+                lands += 1
+            else: lands -= 1
+        elif interact.decode() == 'w' or interact.decode() == '7':
             win = True
             break
-        elif interact.decode() == 'f':
+        elif interact.decode() == 'f' or interact.decode() == '8':
             break
+        elif interact.decode() == '0':
+            sub = True
+        elif interact.decode() == 'q':
+            return
             
 
         if life <= 0:

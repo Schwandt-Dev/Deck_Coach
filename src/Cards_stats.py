@@ -38,8 +38,7 @@ def get_card(saved_tags):
     while True:
         
         print('\nLets enter some tags for this card. What is it\'s purpose in the deck?')
-        print('Be sure to tag your commander as \'Commander\'')
-        print('A single card can have as many tags as you like. Enter something like: Card Draw, Removal or Ramp')
+        print('Be sure to tag your commander as \'Commander\' and lands as \'land\'')
         print(f'Your current tags are {saved_tags}')
         print('Enter q to stop adding tags for this card')
         tag = input()
