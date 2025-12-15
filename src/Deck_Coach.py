@@ -7,8 +7,6 @@ import Cards_stats
 import Playtest
 import Track_card
 import auto_update
-import subprocess
-import requests
 
 
 CURRENT_VERSION = "1.0.2"
@@ -41,6 +39,7 @@ def on_update_func():
     # add feature to view games played in Deck Coach 
         #need to be able to delete bad stats that might be stored in game stats
     # make gui version of menues
+    # ship to andriod
 ####################################################################################
 
 # Returns an integer value of a user input, positive number.   
@@ -147,7 +146,6 @@ def get_sessions(path, c):
         sys.exit()
 
 if __name__ == "__main__":
-    #configure_fs()
     auto_update.check_for_updates(CURRENT_VERSION, HARM_MESSAGE)
     print(f'Welcome to Deck Coach Version {CURRENT_VERSION}!')
     if UPDATE_MESSAGE != '': print(UPDATE_MESSAGE)
