@@ -70,7 +70,7 @@ def goldfish(path):
                     goldfish_stats.append(goldfish_game)
                     json.dump(goldfish_stats, file, indent=4)
                 
-                #gen_game_summary(path, 'won', turn_count)
+                gen_game_summary(path, 'won', turn_count)
                 return
             continue
         elif choice == 2:
@@ -83,7 +83,7 @@ def goldfish(path):
             with open(path, 'w') as file:
                 goldfish_stats.append(goldfish_game)
                 json.dump(goldfish_stats, file, indent=4)
-            #gen_game_summary(path, 'won', turn_count)
+            gen_game_summary(path, 'won', turn_count)
             return
     print('You lose :(')
     goldfish_game['end_turn'] = turn_count
@@ -91,23 +91,27 @@ def goldfish(path):
     with open(path, 'w') as file:
         goldfish_stats.append(goldfish_game)
         json.dump(goldfish_stats, file, indent=4)
-    #gen_game_summary(path, 'lost', turn_count)
+    gen_game_summary(path, 'lost', turn_count)
     return
-
-
-def write_tbt(path, tbt_list):
-    with open(path, 'a+') as file:
-        for i in range(len(tbt_list)):
-            file.write(tbt_list[i])
-        return
     
 def gen_game_summary(path, c, turn_count):
-    sessions = get_sessions(path, '*')
-    wins = get_sessions(path, 'W')   
-       
-    win_rate = ((wins - 1) / (sessions - 1)) * 100
-   
-    print(f'\nGame {c} on turn {turn_count}\nYour current win rate is %{win_rate}\n')
+    try:
+        with open(path, 'r') as file:
+            goldfish_stats = json.load(file)
+    except:
+        print('Unable to open goldfish stats file.')
+        return
+    results_list = []
+    for game in goldfish_stats:
+        results_list.append(game['result'])
+    
+    if results_list == []:
+        print('No goldfish games detected')
+    elif sum(results_list) == 0:
+        print(f'\nGame {c} on turn {turn_count}\nYour current win rate is %0\n')
+    else:    
+        win_rate = (sum(results_list) / len(results_list)) * 100
+        print(f'\nGame {c} on turn {turn_count}\nYour current win rate is %{win_rate}\n')
     return
 
 #returns integer value of cards kept after
@@ -116,18 +120,6 @@ def mulligan(mul_count):
     print('Draw', 8 - mul_count, 'and try again')
     return 8 - mul_count
 
-#write game stats/golfish stats to file
-def log_game(path, c, turn_count, cards_kept, lands_kept, mulled_lands):
-   
-    with open(path, 'a+') as file:
-        sessions = get_sessions(path, '*')
-        file.write(f'\n*** Session {sessions} ***\n')
-        for i in range(len(mulled_lands)):
-            file.write(f'- Mulliganed hand with {mulled_lands[i]} lands.\n')
-        file.write(f'Kept {cards_kept} cards with {lands_kept} lands\n')
-        file.write(c + '\n')
-        file.write(f'Turn {turn_count}\n')
-    return
 
 # Returns an integer value of a user input, positive number.   
 def vet_user_num(string):
@@ -136,16 +128,3 @@ def vet_user_num(string):
         if user_num.isdigit():
             return int(user_num)                             
                                      
-def get_sessions(path, c):
-    try:
-        with open(path, 'r') as file:
-            file.seek(0)
-            stats = file.readlines()
-            sessions = 1
-            for line in stats:
-               if line[0] == c:
-                    sessions += 1
-            return sessions
-    except:
-        print(f'\nError\nUnable to find file {path}\nIf you have not yet entered goldfish or game stats no file will exist\n')
-        exit(0)

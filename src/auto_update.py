@@ -22,6 +22,7 @@ def check_for_updates(CURRENT_VERSION, HARM_MESSAGE):
     latest_version = data["tag_name"].lstrip("v")
 
     if latest_version == CURRENT_VERSION:
+        configure_fs()
         return
 
     print(f"Update available ({CURRENT_VERSION} → {latest_version}). Update now? (y/n): ")
@@ -88,3 +89,22 @@ ren "{new_exe}" "{exe_name}"
 echo Update applied successfully!
 del "%~f0"
 """)
+        
+def configure_fs():
+    url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
+    if 'Deck_Coach' not in os.getcwd() and 'Deck Coach' not in os.getcwd():
+        if not os.path.isdir('Deck_Coach'):
+            os.mkdir('Deck_Coach')
+        response = requests.get(url, timeout=5)
+
+        if response.status_code != 200:
+            return
+
+        data = response.json()
+
+        for asset in data["assets"]:
+            if asset["name"] == APP_NAME:
+                download_update(asset["browser_download_url"])
+        create_update_bat()
+        subprocess.Popen([os.path.join(os.getcwd(), "update.bat")], creationflags=subprocess.CREATE_NEW_CONSOLE)
+        sys.exit(0)

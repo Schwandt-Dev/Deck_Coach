@@ -27,7 +27,7 @@ def on_update_func():
         print('THERE CAN ONLY BE ONE\nIf you already have a file or folder named Deck_Coach remove it and restart the application')
     pass
 ############################### CHANGE LOG #########################################
-   
+   # use json for goldfish stats
 ####################################################################################
 
 ################################## TODO ############################################
@@ -40,7 +40,7 @@ def on_update_func():
         # identify veggies (card draw, removal) and remove from the chopping block
     # add feature to view games played in Deck Coach 
         #need to be able to delete bad stats that might be stored in game stats
-    # use json for goldfish stats
+    # make gui version of menues
 ####################################################################################
 
 # Returns an integer value of a user input, positive number.   
@@ -50,28 +50,7 @@ def vet_user_num(string):
         if user_num.isdigit():
             return int(user_num)                             
                                         
-# Configures file system for Deck Coach if it is not already configured
-def configure_fs():
-    OWNER = "Schwandt-Dev"
-    REPO = "Deck_Coach"
-    APP_NAME = "Deck_Coach.exe"
-    url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
-    if 'Deck_Coach' not in os.getcwd() and 'Deck Coach' not in os.getcwd():
-        if not os.path.isdir('Deck_Coach'):
-            os.mkdir('Deck_Coach')
-        response = requests.get(url, timeout=5)
 
-        if response.status_code != 200:
-            return
-
-        data = response.json()
-
-        for asset in data["assets"]:
-            if asset["name"] == APP_NAME:
-                auto_update.download_update(asset["browser_download_url"])
-        auto_update.create_update_bat()
-        subprocess.Popen([os.path.join(os.getcwd(), "update.bat")], creationflags=subprocess.CREATE_NEW_CONSOLE)
-        sys.exit(0)
 
 #main menu for an individual deck
 def deck_menu_loop(path):   
@@ -168,7 +147,7 @@ def get_sessions(path, c):
         sys.exit()
 
 if __name__ == "__main__":
-    configure_fs()
+    #configure_fs()
     auto_update.check_for_updates(CURRENT_VERSION, HARM_MESSAGE)
     print(f'Welcome to Deck Coach Version {CURRENT_VERSION}!')
     if UPDATE_MESSAGE != '': print(UPDATE_MESSAGE)
