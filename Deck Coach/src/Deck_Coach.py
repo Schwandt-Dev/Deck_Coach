@@ -56,7 +56,7 @@ def configure_fs():
     REPO = "Deck_Coach"
     APP_NAME = "Deck_Coach.exe"
     url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
-    if 'Deck_Coach' not in os.getcwd():
+    if 'Deck_Coach' not in os.getcwd() and 'Deck Coach' not in os.getcwd():
         if not os.path.isdir('Deck_Coach'):
             os.mkdir('Deck_Coach')
         response = requests.get(url, timeout=5)
