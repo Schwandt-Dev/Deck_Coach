@@ -16,9 +16,11 @@ class Deck_Coach(App):
 
         sm.add_widget(Main_Menu(name='main'))
         sm.add_widget(New_Deck_Screen(name='new_deck_screen'))
-        sm.add_widget(Deck_Muenu_Screen(name='deck_menu'))
+        sm.add_widget(Deck_Menu_Screen(name='deck_menu'))
         sm.add_widget(Warning_Screen(name='warning_screen'))
         sm.add_widget(Deck_List_Menu(name='deck_list_menu'))
+        sm.add_widget(View_Stats_Menu(name='view_stats_menu'))
+        sm.add_widget(Goldfish_Stats_Menu(name='goldfish_stats_menu'))
 
         sm.current = 'main'
         return sm
@@ -95,7 +97,7 @@ class New_Deck_Screen(Screen):
 
         self.manager.current = 'main'
 
-class Deck_Muenu_Screen(Screen):
+class Deck_Menu_Screen(Screen):
     def on_enter(self):
 
         app = App.get_running_app()
@@ -130,14 +132,13 @@ class Deck_Muenu_Screen(Screen):
     def goto_life_counter(self, instance):
         pass
     def goto_view_stats(self, instance):
-        pass
+        self.manager.current = 'view_stats_menu'
     def goto_deck_list(self, instance):
         self.manager.current = 'deck_list_menu'
     def go_back(self, instance):
         self.manager.current = 'main'
     def goto_warning(self, instance):
         self.manager.current = 'warning_screen'
-
 
 class Warning_Screen(Screen):
     def on_enter(self):
@@ -200,6 +201,68 @@ class Deck_List_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
+
+class View_Stats_Menu(Screen):
+    def on_enter(self):
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        goldfish_stats_btn = Button(text='Goldfish Stats', size_hint=(1, None), height=50)
+        game_stats_btn = Button(text='Game Stats', size_hint=(1, None), height=50)
+        tracked_card_stats_btn = Button(text='Tracked Card Stats', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height = 50)
+
+        layout.add_widget(goldfish_stats_btn)
+        layout.add_widget(game_stats_btn)
+        layout.add_widget(tracked_card_stats_btn)
+        layout.add_widget(back_btn)
+
+        goldfish_stats_btn.bind(on_press=self.goto_view_goldfish_stats)
+        game_stats_btn.bind(on_press=self.goto_view_game_stats)
+        tracked_card_stats_btn.bind(on_press=self.goto_view_tracked_card_stats)
+        back_btn.bind(on_press=self.go_back)
+
+        self.add_widget(layout)
+
+    def goto_view_goldfish_stats(self, instance):
+        self.manager.current = 'goldfish_stats_menu'
+    def goto_view_game_stats(self, instance):
+        pass
+    def goto_view_tracked_card_stats(self, instance):
+        pass
+    def go_back(self, instance):
+        self.manager.current = 'deck_menu'
+
+class Goldfish_Stats_Menu(Screen):
+    def on_enter(self):
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        lands_in_opening_hand_btn = Button(text='Lands in opening hand', size_hint=(1, None), height=50)
+        game_length_btn = Button(text='Game Length', size_hint=(1, None), height=50)
+        cards_in_opening_hand_btn = Button(text='Cards in opening hand', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+
+        layout.add_widget(lands_in_opening_hand_btn)
+        layout.add_widget(game_length_btn)
+        layout.add_widget(cards_in_opening_hand_btn)
+        layout.add_widget(back_btn)
+
+        lands_in_opening_hand_btn.bind(on_press=self.get_opening_lands_stats)
+        game_length_btn.bind(on_press=self.get_game_length_stats)
+        cards_in_opening_hand_btn.bind(on_press=self.get_opening_cards_stats)
+        back_btn.bind(on_press=self.go_back)
+
+        self.add_widget(layout)
+
+    def get_opening_lands_stats(self, instance):
+        pass
+    def get_game_length_stats(self, instance):
+        pass
+    def get_opening_cards_stats(self, instance):
+        pass
+    def go_back(self, instance):
+        self.manager.current = 'view_stats_menu'
+
+
 
 if __name__ == "__main__":
     Deck_Coach().run()
