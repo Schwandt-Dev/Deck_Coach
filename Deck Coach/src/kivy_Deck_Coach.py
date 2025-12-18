@@ -4,6 +4,7 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.gridlayout import GridLayout
 import os
 import shutil
 
@@ -22,6 +23,7 @@ class Deck_Coach(App):
         sm.add_widget(View_Stats_Menu(name='view_stats_menu'))
         sm.add_widget(Goldfish_Stats_Menu(name='goldfish_stats_menu'))
         sm.add_widget(Game_Stats_Menu(name='game_stats_menu'))
+        sm.add_widget(Life_Counter_Screen(name='life_counter_screen'))
 
         sm.current = 'main'
         return sm
@@ -29,6 +31,8 @@ class Deck_Coach(App):
 class Main_Menu(Screen):
     def on_enter(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.clear_widgets()
         #layout format current layout on screen
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
 
@@ -70,6 +74,7 @@ class Main_Menu(Screen):
     def deck_selection(self, instance):
         app = App.get_running_app()
         app.deck_name = instance.text
+        print(app.deck_name)
         self.manager.current = 'deck_menu'
 
 class New_Deck_Screen(Screen):
@@ -99,10 +104,8 @@ class New_Deck_Screen(Screen):
         self.manager.current = 'main'
 
 class Deck_Menu_Screen(Screen):
-    def on_enter(self):
-
-        app = App.get_running_app()
-        path = 'Decks/' + app.deck_name
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         goldfish_btn = Button(text='Goldfish', size_hint=(1, None), height=50)
@@ -131,7 +134,7 @@ class Deck_Menu_Screen(Screen):
     def goto_goldfish(self, instance):
         pass
     def goto_life_counter(self, instance):
-        pass
+        self.manager.current = 'life_counter_screen'
     def goto_view_stats(self, instance):
         self.manager.current = 'view_stats_menu'
     def goto_deck_list(self, instance):
@@ -142,34 +145,41 @@ class Deck_Menu_Screen(Screen):
         self.manager.current = 'warning_screen'
 
 class Warning_Screen(Screen):
-    def on_enter(self):
-        app = App.get_running_app()
-        self.path = 'Decks/' + app.deck_name
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
-        warning_label = Label(text=f'Are you sure you want to delete {app.deck_name}?')
+        self.warning_label = Label(text='', size_hint_y=None, height=80)
         confirm_btn = Button(text='Confirm', size_hint=(1, None), height=80)
         back_btn = Button(text='Back', size_hint=(1, None), height=80)
 
         confirm_btn.bind(on_press=self.delete_deck)
         back_btn.bind(on_press=self.go_back)
 
-        layout.add_widget(warning_label)
+        layout.add_widget(self.warning_label)
         layout.add_widget(confirm_btn)
         layout.add_widget(back_btn)
 
         self.add_widget(layout)
 
-    def go_back(self, instance):
-        self.manager.current = 'deck_menu'
-    def delete_deck(self, instance):
-        shutil.rmtree(self.path)
-        self.go_back(instance)
-
-class Deck_List_Menu(Screen):
     def on_enter(self):
         app = App.get_running_app()
-        path = 'Decks/' + app.deck_name
+        self.path = 'Decks/' + app.deck_name
+        self.warning_label.text = f'Are you sure you want to delete {app.deck_name}'
+
+    def go_back(self, instance):
+        self.manager.current = 'main'
+    def delete_deck(self, instance):
+        app = App.get_running_app()
+        self.path = 'Decks/' + app.deck_name
+        shutil.rmtree(self.path)
+        self.manager.current = 'main'
+
+class Deck_List_Menu(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         view_card_list_btn = Button(text='View Deck List', size_hint=(1, None), height=50)
@@ -204,7 +214,8 @@ class Deck_List_Menu(Screen):
         self.manager.current = 'deck_menu'
 
 class View_Stats_Menu(Screen):
-    def on_enter(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         goldfish_stats_btn = Button(text='Goldfish Stats', size_hint=(1, None), height=50)
@@ -234,7 +245,8 @@ class View_Stats_Menu(Screen):
         self.manager.current = 'deck_menu'
 
 class Goldfish_Stats_Menu(Screen):
-    def on_enter(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         lands_in_opening_hand_btn = Button(text='Lands in opening hand', size_hint=(1, None), height=50)
@@ -264,7 +276,8 @@ class Goldfish_Stats_Menu(Screen):
         self.manager.current = 'view_stats_menu'
 
 class Game_Stats_Menu(Screen):
-    def on_enter(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         lands_per_game_btn = Button(text='Lands per Game', size_hint=(1, None), height=50)
@@ -298,5 +311,75 @@ class Game_Stats_Menu(Screen):
     def go_back(self, instance):
         self.manager.current = 'view_stats_menu'
 
+class Life_Counter_Screen(Screen):
+    def on_enter(self):
+        self.clear_widgets()
+
+        layout = GridLayout(
+            cols=4,
+            padding=10,
+            spacing=10,
+            size_hint_y=None
+        )
+        layout.bind(minimum_height=layout.setter('height'))
+
+        self.values = {
+            'Life':40,
+            'Turn':0,
+            'Draws':0,
+            'Lands':0,
+            'Exp':0
+        }
+
+
+        for name in self.values:
+            minus_btn = Button(text='-', size_hint=(1, None), height=50)
+            minus_btn.row_name = name
+            minus_btn.bind(on_press=self.decrement)
+
+            value_label = Label(text=str(self.values[name]))
+            value_label.row_name = name
+            self.values[name] = value_label
+
+            plus_btn = Button(text='+', size_hint=(1, None), height=50)
+            plus_btn.row_name = name
+            plus_btn.bind(on_press=self.increment)
+
+            name_label = Label(text=name)
+
+            layout.add_widget(minus_btn)
+            layout.add_widget(value_label)
+            layout.add_widget(plus_btn)
+            layout.add_widget(name_label)
+
+        win_btn = Button(text='Win', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        lose_btn = Button(text='Lose', size_hint=(1, None), height=50)
+
+        win_btn.bind(on_press=self.end_game)
+        lose_btn.bind(on_press=self.end_game)
+        back_btn.bind(on_press=self.go_back)
+
+        layout.add_widget(win_btn)
+        layout.add_widget(back_btn)
+        layout.add_widget(lose_btn)
+
+        self.add_widget(layout)
+
+    def decrement(self, instance):
+        name = instance.row_name
+        value_label = self.values[name]
+        value_label.text = str(int(value_label.text) - 1)
+    def increment(self, instance):
+        name = instance.row_name
+        value_label = self.values[name]
+        value_label.text = str(int(value_label.text) + 1)
+    def go_back(self, instance):
+        self.manager.current = 'deck_menu'
+    def end_game(self, instance, win_bool):
+        pass
+
+
+        
 if __name__ == "__main__":
     Deck_Coach().run()
