@@ -27,7 +27,8 @@ class Deck_Coach(App):
 
         sm.current = 'main'
         return sm
-
+    
+# Fully Functional
 class Main_Menu(Screen):
     def on_enter(self, **kwargs):
         super().__init__(**kwargs)
@@ -77,6 +78,7 @@ class Main_Menu(Screen):
         print(app.deck_name)
         self.manager.current = 'deck_menu'
 
+# Fully Functional
 class New_Deck_Screen(Screen):
     def on_enter(self, **kwargs):
         super().__init__(**kwargs)
@@ -144,6 +146,7 @@ class Deck_Menu_Screen(Screen):
     def goto_warning(self, instance):
         self.manager.current = 'warning_screen'
 
+# Fully Functional
 class Warning_Screen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -379,6 +382,12 @@ class Life_Counter_Screen(Screen):
     def end_game(self, instance, win_bool):
         pass
 
+# Need to implement add cards first
+class Tracked_Card_Stats_Menu(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        pass
 
         
 if __name__ == "__main__":
