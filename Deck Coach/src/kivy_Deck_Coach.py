@@ -21,6 +21,7 @@ class Deck_Coach(App):
         sm.add_widget(Deck_List_Menu(name='deck_list_menu'))
         sm.add_widget(View_Stats_Menu(name='view_stats_menu'))
         sm.add_widget(Goldfish_Stats_Menu(name='goldfish_stats_menu'))
+        sm.add_widget(Game_Stats_Menu(name='game_stats_menu'))
 
         sm.current = 'main'
         return sm
@@ -226,7 +227,7 @@ class View_Stats_Menu(Screen):
     def goto_view_goldfish_stats(self, instance):
         self.manager.current = 'goldfish_stats_menu'
     def goto_view_game_stats(self, instance):
-        pass
+        self.manager.current = 'game_stats_menu'
     def goto_view_tracked_card_stats(self, instance):
         pass
     def go_back(self, instance):
@@ -262,7 +263,40 @@ class Goldfish_Stats_Menu(Screen):
     def go_back(self, instance):
         self.manager.current = 'view_stats_menu'
 
+class Game_Stats_Menu(Screen):
+    def on_enter(self):
 
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        lands_per_game_btn = Button(text='Lands per Game', size_hint=(1, None), height=50)
+        game_length_btn = Button(text='Game Length', size_hint=(1, None), height=50)
+        win_rate_btn = Button(text='Win Rate', size_hint=(1, None), height=50)
+        cards_drawn_btn = Button(text='Cards Drawn', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+
+        layout.add_widget(lands_per_game_btn)
+        layout.add_widget(game_length_btn)
+        layout.add_widget(win_rate_btn)
+        layout.add_widget(cards_drawn_btn)
+        layout.add_widget(back_btn)
+
+        lands_per_game_btn.bind(on_press=self.view_lands_per_game)
+        game_length_btn.bind(on_press=self.view_game_length)
+        win_rate_btn.bind(on_press=self.view_win_rate)
+        cards_drawn_btn.bind(on_press=self.view_cards_drawn)
+        back_btn.bind(on_press=self.go_back)
+
+        self.add_widget(layout)
+
+    def view_lands_per_game(self, instance):
+        pass
+    def view_game_length(self, instance):
+        pass
+    def view_win_rate(self, instance):
+        pass
+    def view_cards_drawn(self, instance):
+        pass
+    def go_back(self, instance):
+        self.manager.current = 'view_stats_menu'
 
 if __name__ == "__main__":
     Deck_Coach().run()
