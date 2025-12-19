@@ -25,6 +25,7 @@ class Deck_Coach(App):
         sm.add_widget(Goldfish_Stats_Menu(name='goldfish_stats_menu'))
         sm.add_widget(Game_Stats_Menu(name='game_stats_menu'))
         sm.add_widget(Life_Counter_Screen(name='life_counter_screen'))
+        sm.add_widget(Goldfish_Screen(name='goldfish_screen'))
 
         sm.current = 'main'
         return sm
@@ -104,7 +105,7 @@ class New_Deck_Screen(Screen):
             print("Deck already exists with that name", e)
 
         self.manager.current = 'main'
-
+# Fully Functional
 class Deck_Menu_Screen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -134,7 +135,7 @@ class Deck_Menu_Screen(Screen):
         self.add_widget(layout)
 
     def goto_goldfish(self, instance):
-        pass
+        self.manager.current = 'goldfish_screen'
     def goto_life_counter(self, instance):
         self.manager.current = 'life_counter_screen'
     def goto_view_stats(self, instance):
@@ -312,14 +313,13 @@ class Game_Stats_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'view_stats_menu'
-
+# Fully Functional
 class Life_Counter_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
 
         app = App.get_running_app()
         self.path = 'Decks/' + app.deck_name + '/game_stats.json'
-        print(self.path)
 
         layout = GridLayout(
             cols=4,
@@ -404,7 +404,100 @@ class Life_Counter_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
+# Fully Functional
+class Goldfish_Screen(Screen):
+    def on_enter(self):
+        self.clear_widgets()
+
+        app = App.get_running_app()
+        self.path = 'Decks/' + app.deck_name + '/goldfish_stats.json'
+
+        layout = GridLayout(
+            cols=4,
+            padding=10,
+            spacing=10,
+            size_hint_y=None
+        )
+        layout.bind(minimum_height=layout.setter('height'))
+
+        self.values = {
+            'Damage':120,
+            'Life':40,
+            'Turn':0,
+            'Draws':0,
+            'Lands':0,
+            'Exp':0
+        }
+
+        self.value_labels = {}
+
+
+        for name in self.values:
+            minus_btn = Button(text='-', size_hint=(1, None), height=50)
+            minus_btn.row_name = name
+            minus_btn.bind(on_press=self.decrement)
+
+            value_label = Label(text=str(self.values[name]))
+            value_label.row_name = name
+            self.value_labels[name] = value_label
+
+            plus_btn = Button(text='+', size_hint=(1, None), height=50)
+            plus_btn.row_name = name
+            plus_btn.bind(on_press=self.increment)
+
+            name_label = Label(text=name)
+
+            layout.add_widget(minus_btn)
+            layout.add_widget(value_label)
+            layout.add_widget(plus_btn)
+            layout.add_widget(name_label)
+
+        win_btn = Button(text='Win', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        lose_btn = Button(text='Lose', size_hint=(1, None), height=50)
+
+        win_btn.bind(on_press=self.end_game)
+        lose_btn.bind(on_press=self.end_game)
+        back_btn.bind(on_press=self.go_back)
+
+        layout.add_widget(win_btn)
+        layout.add_widget(back_btn)
+        layout.add_widget(lose_btn)
+
+        self.add_widget(layout)
+
+    def decrement(self, instance):
+        name = instance.row_name
+        self.values -= 1
+        self.value_labels[name].text = str(self.values[name])
+    def increment(self, instance):
+        name = instance.row_name
+        self.values += 1
+        self.value_labels[name].text = str(self.values[name])
+    def go_back(self, instance):
+        self.manager.current = 'deck_menu'
+    def end_game(self, instance):
+        result = instance.text
+
+        try:
+            with open(self.path, 'r') as file:
+                games_list = json.load(file)
+        except:
+            games_list = []
         
+        game = {'result':result}
+        game.update(self.values)
+        game['Damage'] = 120 - game['Damage']
+        games_list.append(game)
+        
+        try:
+            with open(self.path, 'w') as file:
+                json.dump(games_list, file, indent=4)
+        except Exception as e:
+            print('Houston we have a problem ', e)
+
+        self.manager.current = 'deck_menu'
+
 
 # Need to implement add cards first
 class Tracked_Card_Stats_Menu(Screen):
