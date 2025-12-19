@@ -5,9 +5,11 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
+from kivy.metrics import sp
 import os
 import shutil
 import json
+import statistics
 
 class Deck_Coach(App):
 
@@ -71,13 +73,11 @@ class Main_Menu(Screen):
 
 
     def exit_app(self, instance):
-        print('Exiting...')
         App.get_running_app().stop()
 
     def deck_selection(self, instance):
         app = App.get_running_app()
         app.deck_name = instance.text
-        print(app.deck_name)
         self.manager.current = 'deck_menu'
 # Fully Functional
 class New_Deck_Screen(Screen):
@@ -172,7 +172,7 @@ class Warning_Screen(Screen):
         self.warning_label.text = f'Are you sure you want to delete {app.deck_name}'
 
     def go_back(self, instance):
-        self.manager.current = 'main'
+        self.manager.current = 'deck_menu'
     def delete_deck(self, instance):
         app = App.get_running_app()
         self.path = 'Decks/' + app.deck_name
@@ -215,7 +215,7 @@ class Deck_List_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-
+# Need to implement add cards first
 class View_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -246,7 +246,7 @@ class View_Stats_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-# Need to finish Goldfish Screen
+
 class Goldfish_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -277,10 +277,14 @@ class Goldfish_Stats_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'view_stats_menu'
-# Need to finish Life Counter Screen
+# Fully Functional
 class Game_Stats_Menu(Screen):
-    def __init__(self, **kwargs):
+    def on_enter(self, **kwargs):
         super().__init__(**kwargs)
+        self.clear_widgets()
+
+        app = App.get_running_app()
+        self.path = 'Decks/' + app.deck_name + '/game_stats.json'
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         lands_per_game_btn = Button(text='Lands per Game', size_hint=(1, None), height=50)
@@ -304,15 +308,153 @@ class Game_Stats_Menu(Screen):
         self.add_widget(layout)
 
     def view_lands_per_game(self, instance):
-        pass
+        try:
+            with open(self.path, 'r') as file:
+                games_list = json.load(file)
+
+                cards_drawn_list = []
+            for game in games_list:
+                cards_drawn_list.append(game['Lands'])
+
+            if sum(cards_drawn_list) == 0:
+                cards_average = 0
+            else:
+                cards_average = sum(cards_drawn_list) / len(cards_drawn_list)
+
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            cards_label = Label(text=f'By the end of a typical game you will have played an average of {cards_average} lands.\nAnd by the end of most games you will have played {statistics.mode(cards_drawn_list)} lands.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(cards_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)
+
+        except:
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            fail_label = Label(text='Unable to open Game Stats file.\nThe file will not exist if you have not played games via the life counter.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(fail_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)
     def view_game_length(self, instance):
-        pass
+        try:
+            with open(self.path, 'r') as file:
+                games_list = json.load(file)
+
+                cards_drawn_list = []
+            for game in games_list:
+                cards_drawn_list.append(game['Turn'])
+
+            if sum(cards_drawn_list) == 0:
+                cards_average = 0
+            else:
+                cards_average = sum(cards_drawn_list) / len(cards_drawn_list)
+
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            cards_label = Label(text=f'Your typiacal game lasts {cards_average} turns.\nAnd will end most often by turn {statistics.mode(cards_drawn_list)}.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(cards_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)
+
+        except Exception as e:
+            print(e)
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            fail_label = Label(text='Unable to open Game Stats file.\nThe file will not exist if you have not played games via the life counter.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(fail_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)
     def view_win_rate(self, instance):
-        pass
+        try:
+            with open(self.path, 'r') as file:
+                games_list = json.load(file)
+
+                results_list = []
+            for game in games_list:
+                if game['result'] == 'Win':
+                    results_list.append(1)
+                else: results_list.append(0)
+
+            if sum(results_list) == 0:
+                win_rate = 0
+            else:
+                win_rate = (sum(results_list) / len(results_list)) * 100
+
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            cards_label = Label(text=f'Your Current win rate is %{win_rate}', font_size=sp(32))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(cards_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)
+
+        except Exception as e:
+            print(e)
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            fail_label = Label(text='Unable to open Game Stats file.\nThe file will not exist if you have not played games via the life counter.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(fail_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout) 
     def view_cards_drawn(self, instance):
-        pass
+        try:
+            with open(self.path, 'r') as file:
+                games_list = json.load(file)
+
+                cards_drawn_list = []
+            for game in games_list:
+                cards_drawn_list.append(game['Draws'])
+
+            if sum(cards_drawn_list) == 0:
+                cards_average = 0
+            else:
+                cards_average = sum(cards_drawn_list) / len(cards_drawn_list)
+
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            cards_label = Label(text=f'By the end of a typical game you will have drawn average of {cards_average} cards.\nAnd by the end of most games you will have drawn {statistics.mode(cards_drawn_list)} cards.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(cards_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)
+
+        except Exception as e:
+            print(e)
+            self.clear_widgets()
+            layout = BoxLayout(orientation = 'vertical', padding=10, spacing=10)
+            fail_label = Label(text='Unable to open Game Stats file.\nThe file will not exist if you have not played games via the life counter.', font_size=sp(24))
+            back_btn = Button(text='Back', size_hint=(1, None), height=100)
+            back_btn.bind(on_press=self.reload)
+            layout.add_widget(fail_label)
+            layout.add_widget(back_btn)
+
+            self.add_widget(layout)    
+        
     def go_back(self, instance):
         self.manager.current = 'view_stats_menu'
+
+    def reload(self, instance):
+        self.on_enter()
+
 # Fully Functional
 class Life_Counter_Screen(Screen):
     def on_enter(self):
@@ -376,11 +518,11 @@ class Life_Counter_Screen(Screen):
 
     def decrement(self, instance):
         name = instance.row_name
-        self.values -= 1
+        self.values[name] -= 1
         self.value_labels[name].text = str(self.values[name])
     def increment(self, instance):
         name = instance.row_name
-        self.values += 1
+        self.values[name] += 1
         self.value_labels[name].text = str(self.values[name])
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
@@ -404,13 +546,85 @@ class Life_Counter_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
-# Fully Functional
+# Fix Goldfish Hand
 class Goldfish_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
 
         app = App.get_running_app()
         self.path = 'Decks/' + app.deck_name + '/goldfish_stats.json'
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        gfh_btn = Button(text='Goldfish Hand', size_hint=(1, None), height=200)
+        gfg_btn = Button(text='Goldfish Game', size_hint=(1, None), height=200)
+
+        gfh_btn.bind(on_press=self.goldfish_hand)
+        gfg_btn.bind(on_press=self.goldfish_game)
+
+        layout.add_widget(gfh_btn)
+        layout.add_widget(gfg_btn)
+
+        self.add_widget(layout)
+
+
+    def goldfish_hand(self, instance):
+        self.clear_widgets()
+
+        layout = GridLayout(
+            cols=4,
+            padding=10,
+            spacing=10,
+            size_hint_y=None
+        )
+        layout.bind(minimum_height=layout.setter('height'))
+
+        self.values = {
+            'Damage':120,
+            'Life':40,
+            'Turn':0,
+            'Draws':0,
+            'Lands':0,
+            'Exp':0
+        }
+
+        self.value_labels = {}
+
+
+        for name in self.values:
+            minus_btn = Button(text='-', size_hint=(1, None), height=50)
+            minus_btn.row_name = name
+            minus_btn.bind(on_press=self.decrement)
+
+            value_label = Label(text=str(self.values[name]))
+            value_label.row_name = name
+            self.value_labels[name] = value_label
+
+            plus_btn = Button(text='+', size_hint=(1, None), height=50)
+            plus_btn.row_name = name
+            plus_btn.bind(on_press=self.increment)
+
+            name_label = Label(text=name)
+
+            layout.add_widget(minus_btn)
+            layout.add_widget(value_label)
+            layout.add_widget(plus_btn)
+            layout.add_widget(name_label)
+
+        win_btn = Button(text='Keep', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        lose_btn = Button(text='Mulligan', size_hint=(1, None), height=50)
+
+        win_btn.bind(on_press=self.end_game)
+        lose_btn.bind(on_press=self.end_game)
+        back_btn.bind(on_press=self.go_back)
+
+        layout.add_widget(win_btn)
+        layout.add_widget(back_btn)
+        layout.add_widget(lose_btn)
+
+        self.add_widget(layout)
+    def goldfish_game(self, instance):
+        self.clear_widgets()
 
         layout = GridLayout(
             cols=4,
@@ -497,7 +711,6 @@ class Goldfish_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
-
 
 # Need to implement add cards first
 class Tracked_Card_Stats_Menu(Screen):

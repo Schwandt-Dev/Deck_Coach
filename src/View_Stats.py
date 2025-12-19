@@ -205,8 +205,8 @@ def view_common_stats(path):
                
     except:
         print('Unable to open goldfish_stats.txt file. File may not exist yet if goldfish games have not been played.')
-    finally:
-        return kept_cards, opening_lands, game_turn, win_rate_list, mulled_lands
+    
+    return kept_cards, opening_lands, game_turn, win_rate_list, mulled_lands
     
 # Returns an integer value of a user input, positive number.   
 def vet_user_num(string):
