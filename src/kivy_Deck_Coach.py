@@ -7,6 +7,7 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 import os
 import shutil
+import json
 
 class Deck_Coach(App):
 
@@ -77,7 +78,6 @@ class Main_Menu(Screen):
         app.deck_name = instance.text
         print(app.deck_name)
         self.manager.current = 'deck_menu'
-
 # Fully Functional
 class New_Deck_Screen(Screen):
     def on_enter(self, **kwargs):
@@ -145,7 +145,6 @@ class Deck_Menu_Screen(Screen):
         self.manager.current = 'main'
     def goto_warning(self, instance):
         self.manager.current = 'warning_screen'
-
 # Fully Functional
 class Warning_Screen(Screen):
     def __init__(self, **kwargs):
@@ -246,7 +245,7 @@ class View_Stats_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-
+# Need to finish Goldfish Screen
 class Goldfish_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -277,7 +276,7 @@ class Goldfish_Stats_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'view_stats_menu'
-
+# Need to finish Life Counter Screen
 class Game_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -318,6 +317,10 @@ class Life_Counter_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
 
+        app = App.get_running_app()
+        self.path = 'Decks/' + app.deck_name + '/game_stats.json'
+        print(self.path)
+
         layout = GridLayout(
             cols=4,
             padding=10,
@@ -334,6 +337,8 @@ class Life_Counter_Screen(Screen):
             'Exp':0
         }
 
+        self.value_labels = {}
+
 
         for name in self.values:
             minus_btn = Button(text='-', size_hint=(1, None), height=50)
@@ -342,7 +347,7 @@ class Life_Counter_Screen(Screen):
 
             value_label = Label(text=str(self.values[name]))
             value_label.row_name = name
-            self.values[name] = value_label
+            self.value_labels[name] = value_label
 
             plus_btn = Button(text='+', size_hint=(1, None), height=50)
             plus_btn.row_name = name
@@ -371,16 +376,35 @@ class Life_Counter_Screen(Screen):
 
     def decrement(self, instance):
         name = instance.row_name
-        value_label = self.values[name]
-        value_label.text = str(int(value_label.text) - 1)
+        self.values -= 1
+        self.value_labels[name].text = str(self.values[name])
     def increment(self, instance):
         name = instance.row_name
-        value_label = self.values[name]
-        value_label.text = str(int(value_label.text) + 1)
+        self.values += 1
+        self.value_labels[name].text = str(self.values[name])
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-    def end_game(self, instance, win_bool):
-        pass
+    def end_game(self, instance):
+        result = instance.text
+
+        try:
+            with open(self.path, 'r') as file:
+                games_list = json.load(file)
+        except:
+            games_list = []
+        
+        game = {'result':result}
+        game.update(self.values)
+        games_list.append(game)
+        
+        try:
+            with open(self.path, 'w') as file:
+                json.dump(games_list, file, indent=4)
+        except Exception as e:
+            print('Houston we have a problem ', e)
+
+        self.manager.current = 'deck_menu'
+        
 
 # Need to implement add cards first
 class Tracked_Card_Stats_Menu(Screen):
