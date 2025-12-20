@@ -182,7 +182,7 @@ class Warning_Screen(Screen):
         self.path = 'Decks/' + app.deck_name
         shutil.rmtree(self.path)
         self.manager.current = 'main'
-# Need to finish view deck list, edit cards, track cards
+# Need to finish view deck list, edit cards
 class Deck_List_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -458,13 +458,14 @@ class Game_Stats_Menu(Screen):
 
     def reload(self, instance):
         self.on_enter()
-# Need to add survey and tracked card stats logging
+# Fully Functional
 class Life_Counter_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
 
         app = App.get_running_app()
         self.path = 'Decks/' + app.deck_name + '/game_stats.json'
+        self.decklist_path = 'Decks/' + app.deck_name + '/deck_list.json'
 
         layout = GridLayout(
             cols=4,
@@ -529,24 +530,109 @@ class Life_Counter_Screen(Screen):
         self.value_labels[name].text = str(self.values[name])
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
+    
     def end_game(self, instance):
         result = instance.text
 
+        # ---- save game stats ----
         try:
             with open(self.path, 'r') as file:
                 games_list = json.load(file)
         except:
             games_list = []
-        
-        game = {'result':result}
+
+        game = {'result': result}
         game.update(self.values)
         games_list.append(game)
-        
+
+        with open(self.path, 'w') as file:
+            json.dump(games_list, file, indent=4)
+
+        # ---- load deck list ----
         try:
-            with open(self.path, 'w') as file:
-                json.dump(games_list, file, indent=4)
-        except Exception as e:
-            print('Houston we have a problem ', e)
+            with open(self.decklist_path, 'r') as file:
+                self.deck_list = json.load(file)
+        except:
+            self.manager.current = 'deck_menu'
+            return
+
+        # ---- collect tracked cards ----
+        self.tracked_cards = [
+            card for card in self.deck_list
+            if card.get('tracked', False)
+        ]
+
+        # ---- log win/loss stats ----
+        for card in self.tracked_cards:
+            card.setdefault('tracking', {'wins': [], 'win_turns': [], 'survey': []})
+            card['tracking']['wins'].append(1 if result == 'Win' else 0)
+            if result == 'Win':
+                card['tracking']['win_turns'].append(self.values['Turn'])
+
+        self.current_card_index = 0
+
+        if self.tracked_cards:
+            self.ask_played_card()
+        else:
+            self.finish_tracking()
+
+    def ask_played_card(self):
+        self.clear_widgets()
+
+        self.card = self.tracked_cards[self.current_card_index]
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        label = Label(
+            text=f"Did you play with {self.card['name']} this game?",
+            font_size=24
+        )
+
+        yes_btn = Button(text='Yes', size_hint=(1, None), height=50)
+        no_btn = Button(text='No', size_hint=(1, None), height=50)
+
+        yes_btn.bind(on_press=self.ask_rating)
+        no_btn.bind(on_press=self.next_card)
+
+        layout.add_widget(label)
+        layout.add_widget(yes_btn)
+        layout.add_widget(no_btn)
+
+        self.add_widget(layout)
+
+    def ask_rating(self, instance):
+        self.clear_widgets()
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        label = Label(
+            text=f"Rate {self.card['name']} this game (1–5)",
+            font_size=24
+        )
+
+        layout.add_widget(label)
+
+        for i in range(1, 6):
+            btn = Button(text=str(i), size_hint=(1, None), height=50)
+            btn.bind(on_press=self.save_rating)
+            layout.add_widget(btn)
+
+        self.add_widget(layout)
+
+    def save_rating(self, instance):
+        rating = int(instance.text)
+        self.card['tracking']['survey'].append(rating)
+        self.next_card(instance)
+
+    def next_card(self, instance):
+        self.current_card_index += 1
+
+        if self.current_card_index < len(self.tracked_cards):
+            self.ask_played_card()
+        else:
+            self.finish_tracking()
+
+    def finish_tracking(self):
+        with open(self.decklist_path, 'w') as file:
+            json.dump(self.deck_list, file, indent=4)
 
         self.manager.current = 'deck_menu'
 # Fully Functional
