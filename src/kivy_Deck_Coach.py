@@ -179,7 +179,7 @@ class Warning_Screen(Screen):
         self.path = 'Decks/' + app.deck_name
         shutil.rmtree(self.path)
         self.manager.current = 'main'
-
+# Need to finish view deck list, edit cards, track cards
 class Deck_List_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -216,7 +216,7 @@ class Deck_List_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-# Need to implement add cards first
+# Need to implement tracked card stats
 class View_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -247,7 +247,7 @@ class View_Stats_Menu(Screen):
         pass
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-
+# Need to implement view stats for all options
 class Goldfish_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -455,7 +455,6 @@ class Game_Stats_Menu(Screen):
 
     def reload(self, instance):
         self.on_enter()
-
 # Fully Functional
 class Life_Counter_Screen(Screen):
     def on_enter(self):
@@ -745,14 +744,13 @@ class Goldfish_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
-
 # Need to implement add cards first
 class Tracked_Card_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         pass
-
+# Functional (add tab complete for tags)
 class Add_Cards_Screen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
