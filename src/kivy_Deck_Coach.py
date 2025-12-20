@@ -6,6 +6,7 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.metrics import sp
+from kivy.core.window import Window
 import os
 import shutil
 import json
@@ -744,7 +745,7 @@ class Goldfish_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
-# Need to implement add cards first
+# Need to implement
 class Tracked_Card_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -756,18 +757,38 @@ class Add_Cards_Screen(Screen):
         super().__init__(**kwargs)
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+
         self.added_label = Label()
+
         name_label = Label(text='Card Name', font_size=24)
         self.name_text = TextInput(multiline=False, size_hint=(1, None), height=50)
+
         tags_label = Label(text='Tags', font_size=24)
-        instructions_label = Label(text='Enter each tag separated by a single space', font_size=24)
-        self.tags_text = TextInput(multiline=True, size_hint=(1, None), height=50)
+        instructions_label = Label(
+            text="Enter each tag separated by a comma ',' (TAB to autocomplete)",
+            font_size=20
+        )
+
+        self.tags_text = TextInput(
+            multiline=True,
+            size_hint=(1, None),
+            height=80
+        )
+
+        orig_insert = self.tags_text.insert_text
+
+        def insert_text_hook(substring, from_undo=False):
+            self._reset_matches()
+            return orig_insert(substring, from_undo)
+
+        self.tags_text.insert_text = insert_text_hook
+
+
         submit_btn = Button(text='Submit', size_hint=(1, None), height=50)
         back_btn = Button(text='Back', size_hint=(1, None), height=50)
 
         back_btn.bind(on_press=self.go_back)
         submit_btn.bind(on_press=self.submit_card)
-
 
         layout.add_widget(self.added_label)
         layout.add_widget(name_label)
@@ -779,13 +800,97 @@ class Add_Cards_Screen(Screen):
         layout.add_widget(back_btn)
 
         self.add_widget(layout)
-    
-    def go_back(self, instance):
-        self.manager.current = 'deck_list_menu'
+
+        # --- TAB COMPLETION STATE ---
+        self.known_tags = set()
+        self._matches = []
+        self._match_index = 0
+
+        Window.bind(on_key_down=self._on_key_down)
 
     def on_enter(self):
         app = App.get_running_app()
-        self.path = 'Decks/' + app.deck_name + '/deck_list.json'
+        self.path = f'Decks/{app.deck_name}/deck_list.json'
+        self.load_existing_tags()
+
+    # -----------------------------
+    # TAB COMPLETION LOGIC
+    # -----------------------------
+
+    def load_existing_tags(self):
+        """Load tags from existing deck_list.json"""
+        self.known_tags.clear()
+        try:
+            with open(self.path, 'r') as file:
+                deck_list = json.load(file)
+                for card in deck_list:
+                    for tag in card.get('tags', []):
+                        self.known_tags.add(tag.lower())
+        except:
+            pass
+
+    def _on_key_down(self, window, key, scancode, codepoint, modifiers):
+        # TAB key = 9
+        if key != 9:
+            return False
+
+        # Only autocomplete if tags_text is focused
+        if not self.tags_text.focus:
+            return False
+
+        self.autocomplete_tag()
+        return True  # consume TAB
+
+    def autocomplete_tag(self):
+        text = self.tags_text.text
+        cursor_index = self.tags_text.cursor_index()
+
+        # Find start of current tag (after last comma)
+        start = text.rfind(',', 0, cursor_index) + 1
+        fragment = text[start:cursor_index].strip().lower()
+
+        if not fragment:
+            return
+
+        # Build matches only once per fragment
+        if not self._matches:
+            self._matches = sorted(
+                tag for tag in self.known_tags
+                if tag.startswith(fragment)
+            )
+            self._match_index = 0
+
+        if not self._matches:
+            return
+
+        match = self._matches[self._match_index]
+        self._match_index = (self._match_index + 1) % len(self._matches)
+
+        # Preserve leading space after comma
+        prefix = ' ' if start > 0 and text[start] == ' ' else ''
+
+        new_text = (
+            text[:start]
+            + prefix
+            + match
+            + text[cursor_index:]
+        )
+
+        self.tags_text.text = new_text
+
+        # Restore cursor correctly (flat index → row/col)
+        new_cursor = start + len(prefix) + len(match)
+        self.tags_text.cursor = self.tags_text.get_cursor_from_index(new_cursor)
+
+
+    # Reset matches when typing normally
+    def _reset_matches(self):
+        self._matches = []
+        self._match_index = 0
+
+    # -----------------------------
+    # BUTTON HANDLERS
+    # -----------------------------
 
     def submit_card(self, instance):
         try:
@@ -794,16 +899,30 @@ class Add_Cards_Screen(Screen):
         except:
             deck_list = []
 
-        card = {}
-        card['name'] = self.name_text.text
-        card['tags'] = self.tags_text.text.split()
+        name = self.name_text.text.strip()
+        tags = [t.strip().lower() for t in self.tags_text.text.split(',') if t.strip()]
 
-        self.added_label.text = f'{self.name_text.text} added!'
+        card = {
+            'name': name,
+            'tags': tags
+        }
+
         deck_list.append(card)
+
+        # Update known tags for future autocomplete
+        self.known_tags.update(tags)
+
+        self.added_label.text = f'{name} added!'
         self.name_text.text = ''
+        self.tags_text.text = ''
+        self._reset_matches()
 
         with open(self.path, 'w') as file:
             json.dump(deck_list, file, indent=4)
+
+    def go_back(self, instance):
+        self.manager.current = 'deck_list_menu'
+
       
 if __name__ == "__main__":
     Deck_Coach().run()
