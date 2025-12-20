@@ -5,13 +5,25 @@
             "commander",
             "reanimator",
             "death pay off"
-        ]
+        ],
+        "tracking": {
+            "wins": [],
+            "win_turns": [],
+            "survey": []
+        },
+        "tracked": false
     },
     {
         "name": "skullclamp",
         "tags": [
             "death pay off",
             "card draw"
-        ]
+        ],
+        "tracking": {
+            "wins": [],
+            "win_turns": [],
+            "survey": []
+        },
+        "tracked": true
     }
 ]

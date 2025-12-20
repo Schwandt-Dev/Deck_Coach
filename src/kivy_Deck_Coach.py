@@ -11,6 +11,7 @@ import os
 import shutil
 import json
 import statistics
+from time import sleep
 
 class Deck_Coach(App):
 
@@ -30,6 +31,7 @@ class Deck_Coach(App):
         sm.add_widget(Life_Counter_Screen(name='life_counter_screen'))
         sm.add_widget(Goldfish_Screen(name='goldfish_screen'))
         sm.add_widget(Add_Cards_Screen(name='add_cards_screen'))
+        sm.add_widget(Track_Cards_Screen(name='track_cards_screen'))
 
         sm.current = 'main'
         return sm
@@ -214,7 +216,7 @@ class Deck_List_Menu(Screen):
     def goto_edit_cards(self, instance):
         pass
     def goto_track_cards(self, instance):
-        pass
+        self.manager.current = 'track_cards_screen'
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
 # Need to implement tracked card stats
@@ -456,7 +458,7 @@ class Game_Stats_Menu(Screen):
 
     def reload(self, instance):
         self.on_enter()
-# Fully Functional
+# Need to add survey and tracked card stats logging
 class Life_Counter_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
@@ -745,13 +747,151 @@ class Goldfish_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
-# Need to implement
-class Tracked_Card_Stats_Menu(Screen):
+# Fully Functional
+class Track_Cards_Screen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        pass
-# Functional (add tab complete for tags)
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+
+        self.tracking_label = Label()
+        instructions_label = Label(
+            text='Enter the name of a card to set for tracking (TAB to autocomplete)',
+            font_size=24
+        )
+
+        self.input_box = TextInput(
+            multiline=False,
+            size_hint=(1, None),
+            height=50
+        )
+
+        self.submit_btn = Button(text='Submit', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+
+        self.submit_btn.bind(on_press=self.set_tracking)
+        back_btn.bind(on_press=self.go_back)
+
+        layout.add_widget(self.tracking_label)
+        layout.add_widget(instructions_label)
+        layout.add_widget(self.input_box)
+        layout.add_widget(self.submit_btn)
+        layout.add_widget(back_btn)
+
+        self.add_widget(layout)
+
+        # --- AUTOCOMPLETE STATE ---
+        self.card_names = []
+        self._matches = []
+        self._match_index = 0
+
+        # Reset matches when typing
+        orig_insert = self.input_box.insert_text
+
+        def insert_text_hook(substring, from_undo=False):
+            self._reset_matches()
+            return orig_insert(substring, from_undo)
+
+        self.input_box.insert_text = insert_text_hook
+
+        Window.bind(on_key_down=self._on_key_down)
+
+    def on_enter(self):
+        app = App.get_running_app()
+        self.path = f'Decks/{app.deck_name}/deck_list.json'
+        self.load_card_names()
+
+    # -----------------------------
+    # AUTOCOMPLETE LOGIC
+    # -----------------------------
+
+    def load_card_names(self):
+        self.card_names.clear()
+        try:
+            with open(self.path, 'r') as file:
+                deck_list = json.load(file)
+                for card in deck_list:
+                    name = card.get('name')
+                    if name:
+                        self.card_names.append(name)
+        except:
+            pass
+
+    def _on_key_down(self, window, key, scancode, codepoint, modifiers):
+        # TAB key
+        if key != 9:
+            return False
+
+        if not self.input_box.focus:
+            return False
+
+        self.autocomplete_name()
+        return True  # consume TAB
+
+    def autocomplete_name(self):
+        text = self.input_box.text
+        cursor_index = self.input_box.cursor_index()
+        fragment = text[:cursor_index].lower().strip()
+
+        if not fragment:
+            return
+
+        if not self._matches:
+            self._matches = [
+                name for name in self.card_names
+                if name.lower().startswith(fragment)
+            ]
+            self._match_index = 0
+
+        if not self._matches:
+            return
+
+        match = self._matches[self._match_index]
+        self._match_index = (self._match_index + 1) % len(self._matches)
+
+        self.input_box.text = match
+        self.input_box.cursor = self.input_box.get_cursor_from_index(len(match))
+
+    def _reset_matches(self):
+        self._matches = []
+        self._match_index = 0
+
+    # -----------------------------
+    # BUTTON HANDLERS
+    # -----------------------------
+
+    def set_tracking(self, instance):
+        try:
+            with open(self.path, 'r') as file:
+                deck_list = json.load(file)
+        except:
+            self.tracking_label.text = 'No cards added to deck list'
+            sleep(2)
+            self.go_back()
+            return
+
+        input_name = self.input_box.text.lower().strip()
+
+        for card in deck_list:
+            if input_name == card.get('name', '').lower():
+                if not card.get('tracked', False):
+                    card['tracking'] = {'wins': [], 'win_turns': [], 'survey': []}
+                    card['tracked'] = True
+                    self.tracking_label.text = f'{card["name"]} set for tracking!'
+                else:
+                    card['tracked'] = False
+                    self.tracking_label.text = f'{card["name"]} deselected for tracking!'
+                break
+
+        self.input_box.text = ''
+        self._reset_matches()
+
+        with open(self.path, 'w') as file:
+            json.dump(deck_list, file, indent=4)
+
+    def go_back(self, instance):
+        self.manager.current = 'deck_list_menu'
+# Fully Functional
 class Add_Cards_Screen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
