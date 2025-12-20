@@ -28,6 +28,7 @@ class Deck_Coach(App):
         sm.add_widget(Game_Stats_Menu(name='game_stats_menu'))
         sm.add_widget(Life_Counter_Screen(name='life_counter_screen'))
         sm.add_widget(Goldfish_Screen(name='goldfish_screen'))
+        sm.add_widget(Add_Cards_Screen(name='add_cards_screen'))
 
         sm.current = 'main'
         return sm
@@ -208,7 +209,7 @@ class Deck_List_Menu(Screen):
     def goto_view_cards(self, instance):
         pass
     def goto_add_cards(self, instance):
-        pass
+        self.manager.current = 'add_cards_screen'
     def goto_edit_cards(self, instance):
         pass
     def goto_track_cards(self, instance):
@@ -752,6 +753,59 @@ class Tracked_Card_Stats_Menu(Screen):
 
         pass
 
-        
+class Add_Cards_Screen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        self.added_label = Label()
+        name_label = Label(text='Card Name', font_size=24)
+        self.name_text = TextInput(multiline=False, size_hint=(1, None), height=50)
+        tags_label = Label(text='Tags', font_size=24)
+        instructions_label = Label(text='Enter each tag separated by a single space', font_size=24)
+        self.tags_text = TextInput(multiline=True, size_hint=(1, None), height=50)
+        submit_btn = Button(text='Submit', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+
+        back_btn.bind(on_press=self.go_back)
+        submit_btn.bind(on_press=self.submit_card)
+
+
+        layout.add_widget(self.added_label)
+        layout.add_widget(name_label)
+        layout.add_widget(self.name_text)
+        layout.add_widget(tags_label)
+        layout.add_widget(instructions_label)
+        layout.add_widget(self.tags_text)
+        layout.add_widget(submit_btn)
+        layout.add_widget(back_btn)
+
+        self.add_widget(layout)
+    
+    def go_back(self, instance):
+        self.manager.current = 'deck_list_menu'
+
+    def on_enter(self):
+        app = App.get_running_app()
+        self.path = 'Decks/' + app.deck_name + '/deck_list.json'
+
+    def submit_card(self, instance):
+        try:
+            with open(self.path, 'r') as file:
+                deck_list = json.load(file)
+        except:
+            deck_list = []
+
+        card = {}
+        card['name'] = self.name_text.text
+        card['tags'] = self.tags_text.text.split()
+
+        self.added_label.text = f'{self.name_text.text} added!'
+        deck_list.append(card)
+        self.name_text.text = ''
+
+        with open(self.path, 'w') as file:
+            json.dump(deck_list, file, indent=4)
+      
 if __name__ == "__main__":
     Deck_Coach().run()
