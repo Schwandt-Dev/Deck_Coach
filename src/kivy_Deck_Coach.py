@@ -546,7 +546,7 @@ class Life_Counter_Screen(Screen):
             print('Houston we have a problem ', e)
 
         self.manager.current = 'deck_menu'
-# Fix Goldfish Hand
+# Fully Functional
 class Goldfish_Screen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -558,6 +558,7 @@ class Goldfish_Screen(Screen):
 
         app = App.get_running_app()
         self.path = 'Decks/' + app.deck_name + '/goldfish_stats.json'
+        self.gfh_path = 'Decks/' + app.deck_name + '/goldfish_hand_stats.json'
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         gfh_btn = Button(text='Goldfish Hand', size_hint=(1, None), height=200)
@@ -695,14 +696,16 @@ class Goldfish_Screen(Screen):
         if instance.text == 'Keep':
 
             try:
-                with open(self.path, 'r') as file:
+                with open(self.gfh_path, 'r') as file:
                     games_list = json.load(file)
             except:
                 games_list = []
             self.values['Mull Bool'] = self.mullcount
-            games_list.update(self.values)
-            with open(self.path, 'r') as file:
+            games_list.append(self.values)
+            with open(self.gfh_path, 'w') as file:
                 json.dump(games_list, file, indent=4)
+
+            self.manager.current = 'deck_menu'
         else:
             self.values['Cards Kept'] -= self.mullcount
             if self.mullcount < 1:self.mullcount += 1
