@@ -548,6 +548,11 @@ class Life_Counter_Screen(Screen):
         self.manager.current = 'deck_menu'
 # Fix Goldfish Hand
 class Goldfish_Screen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.mullcount = 0
+    
     def on_enter(self):
         self.clear_widgets()
 
@@ -579,12 +584,8 @@ class Goldfish_Screen(Screen):
         layout.bind(minimum_height=layout.setter('height'))
 
         self.values = {
-            'Damage':120,
-            'Life':40,
-            'Turn':0,
-            'Draws':0,
             'Lands':0,
-            'Exp':0
+            'Castable Cards':0
         }
 
         self.value_labels = {}
@@ -610,17 +611,26 @@ class Goldfish_Screen(Screen):
             layout.add_widget(plus_btn)
             layout.add_widget(name_label)
 
-        win_btn = Button(text='Keep', size_hint=(1, None), height=50)
-        back_btn = Button(text='Back', size_hint=(1, None), height=50)
-        lose_btn = Button(text='Mulligan', size_hint=(1, None), height=50)
+        name = 'Cards Kept'
+        self.values[name] = 7
+        value_label = Label(text=str(self.values[name]))
+        value_label.row_name = name
+        self.value_labels[name] = value_label
+        name_label = Label(text=name)
 
-        win_btn.bind(on_press=self.end_game)
-        lose_btn.bind(on_press=self.end_game)
+        keep_btn = Button(text='Keep', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        mull_btn = Button(text='Mulligan', size_hint=(1, None), height=50)
+
+        keep_btn.bind(on_press=self.end_gf_hand)
+        mull_btn.bind(on_press=self.end_gf_hand)
         back_btn.bind(on_press=self.go_back)
 
-        layout.add_widget(win_btn)
+        layout.add_widget(mull_btn)
+        layout.add_widget(value_label)
+        layout.add_widget(keep_btn)
+        layout.add_widget(name_label)
         layout.add_widget(back_btn)
-        layout.add_widget(lose_btn)
 
         self.add_widget(layout)
     def goldfish_game(self, instance):
@@ -680,13 +690,33 @@ class Goldfish_Screen(Screen):
 
         self.add_widget(layout)
 
+    def end_gf_hand(self, instance):
+
+        if instance.text == 'Keep':
+
+            try:
+                with open(self.path, 'r') as file:
+                    games_list = json.load(file)
+            except:
+                games_list = []
+            self.values['Mull Bool'] = self.mullcount
+            games_list.update(self.values)
+            with open(self.path, 'r') as file:
+                json.dump(games_list, file, indent=4)
+        else:
+            self.values['Cards Kept'] -= self.mullcount
+            if self.mullcount < 1:self.mullcount += 1
+            self.value_labels['Cards Kept'].text = str(self.values['Cards Kept'])
+
+
+
     def decrement(self, instance):
         name = instance.row_name
-        self.values -= 1
+        self.values[name] -= 1
         self.value_labels[name].text = str(self.values[name])
     def increment(self, instance):
         name = instance.row_name
-        self.values += 1
+        self.values[name] += 1
         self.value_labels[name].text = str(self.values[name])
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
