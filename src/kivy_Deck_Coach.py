@@ -7,6 +7,7 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.gridlayout import GridLayout
 from kivy.metrics import sp
 from kivy.core.window import Window
+from kivy.uix.scrollview import ScrollView
 import os
 import shutil
 import json
@@ -32,6 +33,7 @@ class Deck_Coach(App):
         sm.add_widget(Goldfish_Screen(name='goldfish_screen'))
         sm.add_widget(Add_Cards_Screen(name='add_cards_screen'))
         sm.add_widget(Track_Cards_Screen(name='track_cards_screen'))
+        sm.add_widget(View_Cards_Screen(name='view_cards_screen'))
 
         sm.current = 'main'
         return sm
@@ -182,7 +184,7 @@ class Warning_Screen(Screen):
         self.path = 'Decks/' + app.deck_name
         shutil.rmtree(self.path)
         self.manager.current = 'main'
-# Need to finish view deck list, edit cards
+# Need to finish edit cards
 class Deck_List_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -210,7 +212,7 @@ class Deck_List_Menu(Screen):
         self.add_widget(layout)
 
     def goto_view_cards(self, instance):
-        pass
+        self.manager.current = 'view_cards_screen'
     def goto_add_cards(self, instance):
         self.manager.current = 'add_cards_screen'
     def goto_edit_cards(self, instance):
@@ -1148,6 +1150,56 @@ class Add_Cards_Screen(Screen):
 
     def go_back(self, instance):
         self.manager.current = 'deck_list_menu'
+# Fully Functional
+class View_Cards_Screen(Screen):
+    def on_enter(self):
+        self.clear_widgets()
+
+        app = App.get_running_app()
+        path = f'Decks/{app.deck_name}/deck_list.json'
+
+        try:
+            with open(path, 'r') as file:
+                deck_list = json.load(file)
+        except:
+            self.manager.current = 'deck_list_menu'
+            return
+
+        root_layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+
+        scroll = ScrollView(size_hint=(1, 1))
+
+        list_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            spacing=10
+        )
+        list_layout.bind(minimum_height=list_layout.setter('height'))
+
+        for card in deck_list:
+            card_name_label = Label(
+                text=card['name'],
+                font_size=20,
+                size_hint_y=None,
+                height=40
+            )
+            list_layout.add_widget(card_name_label)
+
+        scroll.add_widget(list_layout)
+
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        back_btn.bind(on_press=self.go_back)
+
+        root_layout.add_widget(scroll)
+        root_layout.add_widget(back_btn)
+
+        self.add_widget(root_layout)
+
+    def go_back(self, instance):
+        self.manager.current = 'deck_list_menu'
+
+
+
 
       
 if __name__ == "__main__":
