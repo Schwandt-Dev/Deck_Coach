@@ -5,6 +5,18 @@
             "asdf",
             "asdfasdf",
             "asdfasdfasdfasdfasdf"
-        ]
+        ],
+        "tracking": {
+            "wins": [
+                1
+            ],
+            "win_turns": [
+                3
+            ],
+            "survey": [
+                3
+            ]
+        },
+        "tracked": true
     }
 ]

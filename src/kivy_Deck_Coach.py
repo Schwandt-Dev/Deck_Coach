@@ -35,6 +35,7 @@ class Deck_Coach(App):
         sm.add_widget(Track_Cards_Screen(name='track_cards_screen'))
         sm.add_widget(View_Cards_Screen(name='view_cards_screen'))
         sm.add_widget(Edit_Cards_Screen(name='edit_cards_screen'))
+        sm.add_widget(View_Tracked_Cards_Stats_Screen(name='view_tracked_cards_stats_screen'))
 
         sm.current = 'main'
         return sm
@@ -186,7 +187,7 @@ class Warning_Screen(Screen):
         self.path = 'Decks/' + app.deck_name
         shutil.rmtree(self.path)
         self.manager.current = 'main'
-# Need to finish edit cards
+# Fully Functional
 class Deck_List_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -223,7 +224,7 @@ class Deck_List_Menu(Screen):
         self.manager.current = 'track_cards_screen'
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
-# Need to implement tracked card stats
+# Fully Functional
 class View_Stats_Menu(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -251,7 +252,7 @@ class View_Stats_Menu(Screen):
     def goto_view_game_stats(self, instance):
         self.manager.current = 'game_stats_menu'
     def goto_view_tracked_card_stats(self, instance):
-        pass
+        self.manager.current = 'view_tracked_cards_stats_screen'
     def go_back(self, instance):
         self.manager.current = 'deck_menu'
 # Need to implement view stats for all options
@@ -1262,7 +1263,96 @@ class Edit_Cards_Screen(Add_Cards_Screen):
     def on_pre_enter(self):
         if self.card_index is not None:
             self.load_card(self.card_index)
+# Fully Functional
+class View_Tracked_Cards_Stats_Screen(View_Cards_Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
 
-      
+    def open_edit(self, instance):
+        app = App.get_running_app()
+        dl_path = 'Decks/' + app.deck_name + '/deck_list.json'
+        gs_path = 'Decks/' + app.deck_name + '/game_stats.json'
+
+        try:
+            with open(dl_path, 'r') as file:
+                deck_list = json.load(file)
+            with open(gs_path, 'r') as file:
+                games_list = json.load(file)
+        except:
+            self.manager.current = 'view_stats_menu'
+            return
+
+        win_rate_list = []
+        win_turn_list = []
+
+        for game in games_list:
+            if game['result'] == 'Win':
+                win_turn_list.append(game['Turn'])
+                win_rate_list.append(1)
+            else: win_rate_list.append(0)
+
+        card_index = instance.card_index
+        if 0 <= card_index < len(deck_list):
+            card = deck_list[card_index]
+
+        if sum(win_rate_list) != 0 and win_rate_list != []:
+            win_rate_average = (sum(win_rate_list) / len(win_rate_list)) * 100
+        else: win_rate_average = 0
+
+        if sum(win_turn_list) != 0 and win_turn_list != []:
+            win_turn_average = (sum(win_turn_list) / len(win_turn_list))
+        else: win_turn_average = 0
+
+        if sum(card['tracking']['wins']) != 0 and card['tracking']['wins'] != []:
+            tracked_win_rate_average = (sum(card['tracking']['wins']) / len(card['tracking']['wins']) * 100)
+        else: tracked_win_rate_average = 0
+
+        if sum(card['tracking']['win_turns']) != 0 and card['tracking']['win_turns'] != []:
+            tracked_win_turn_average = sum(card['tracking']['win_turns']) / len(card['tracking']['win_turns'])
+        else: tracked_win_turn_average = 0
+
+        if sum(card['tracking']['survey']) != 0 and card['tracking']['survey'] != []:
+            survey_average = sum(card['tracking']['survey']) / len(card['tracking']['survey'])
+            self.survey_text = f'Your average rating of {card['name']} out of 5 is {survey_average}'
+        else: self.survey_text = f'No Surveys taken with {card['name']}'        
+
+        self.win_rate_text = f'Your overall win rate is %{win_rate_average},'
+        self.win_rate_text_pt2 = f'Your win rate with {card['name']} is %{tracked_win_rate_average}'
+        self.win_turn_text = f'Your average win occurns on turn {win_turn_average},'
+        self.win_turn_text_pt2 = f'Your average win with {card['name']} occurs on turn {tracked_win_turn_average}'
+
+        self.clear_widgets()        
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        win_rate_label = Label(text=self.win_rate_text, font_size=24)
+        win_rate_label_pt2 = Label(text=self.win_rate_text_pt2, font_size=24)
+        win_turn_label = Label(text=self.win_turn_text, font_size=24)
+        win_turn_label_pt2 = Label(text=self.win_turn_text_pt2, font_size=24)
+        survey_label = Label(text=self.survey_text, font_size=24)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+
+        back_btn.bind(on_press=self.reload)
+
+        layout.add_widget(win_rate_label)
+        layout.add_widget(win_rate_label_pt2)
+        layout.add_widget(win_turn_label)
+        layout.add_widget(win_turn_label_pt2)
+        layout.add_widget(survey_label)
+        layout.add_widget(back_btn)
+
+        self.add_widget(layout)
+
+    def reload(self, instance):
+        self.on_enter()
+
+
+    
+
+        
+
+        
+
+        
+
 if __name__ == "__main__":
     Deck_Coach().run()
