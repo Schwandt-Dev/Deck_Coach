@@ -6,5 +6,21 @@
         "mulled_lands": [
             2
         ]
+    },
+    {
+        "Lands": 0,
+        "Castable Cards": 0,
+        "Cards Kept": 7,
+        "mulled_lands": [
+            3
+        ]
+    },
+    {
+        "Lands": 3,
+        "Castable Cards": 7,
+        "Cards Kept": 7,
+        "mulled_lands": [
+            3
+        ]
     }
 ]

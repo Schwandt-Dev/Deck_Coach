@@ -46,7 +46,7 @@ class Deck_Coach(App):
         sm.add_widget(Bootstrap_Screen(name='bootstrap'))
         
 
-        sm.current = 'bootstrap'
+        sm.current = 'main'
         return sm
     
  
@@ -995,7 +995,7 @@ class Goldfish_Screen(Screen):
         self.add_widget(layout)
 
     def end_gf_hand(self, instance):
-
+        # Keep
         if instance.text == 'Keep':
 
             try:
@@ -1009,11 +1009,16 @@ class Goldfish_Screen(Screen):
                 json.dump(games_list, file, indent=4)
 
             self.manager.current = 'deck_menu'
+        # Mulligan
         else:
             self.values['Cards Kept'] -= self.mullcount
             if self.mullcount < 1:self.mullcount += 1
             self.value_labels['Cards Kept'].text = str(self.values['Cards Kept'])
             self.mulled_lands.append(self.values['Lands'])
+            self.values['Lands'] = 0
+            self.values['Castable Cards'] = 0
+            self.value_labels['Lands'].text = '0'
+            self.value_labels['Castable Cards'].text = '0'
 
 
 
