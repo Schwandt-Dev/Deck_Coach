@@ -1,0 +1,20 @@
+[
+    {
+        "result": "Lose",
+        "Damage": 0,
+        "Life": 43,
+        "Turn": 5,
+        "Draws": 7,
+        "Lands": 5,
+        "Exp": 7
+    },
+    {
+        "result": "Win",
+        "Damage": 0,
+        "Life": 42,
+        "Turn": 3,
+        "Draws": 5,
+        "Lands": 2,
+        "Exp": 5
+    }
+]
