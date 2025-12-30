@@ -1,0 +1,43 @@
+[
+    {
+        "name": "asdfasdfas",
+        "tags": [
+            "asdf",
+            "asdfasdf",
+            "asdfasdfasdfasdf"
+        ],
+        "tracking": {
+            "wins": [
+                1
+            ],
+            "win_turns": [
+                0
+            ],
+            "survey": [
+                5
+            ]
+        },
+        "tracked": true
+    },
+    {
+        "name": "kljh",
+        "tags": [
+            "lkj",
+            "jkghjh",
+            "kjhkjh"
+        ]
+    },
+    {
+        "name": "Midnight Reaper",
+        "tags": [
+            "death pay off",
+            "card draw"
+        ]
+    },
+    {
+        "name": "Skullclamp",
+        "tags": [
+            "card draw"
+        ]
+    }
+]

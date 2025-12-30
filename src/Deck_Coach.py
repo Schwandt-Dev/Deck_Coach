@@ -47,12 +47,14 @@ class Deck_Coach(App):
         
 
         sm.current = 'main'
+        #sm.current = 'bootstrap'
         return sm
     
  
 class Bootstrap_Screen(Screen):
     def on_enter(self):
         if not self.is_bootstrapped():
+            os.mkdir('Deck Coach')
             source_exe = sys.executable
             self.create_bootstrap_bat(source_exe)
             subprocess.Popen(
@@ -65,13 +67,17 @@ class Bootstrap_Screen(Screen):
         # Already bootstrapped → continue
         self.manager.current = "update_check"
     def is_bootstrapped(self):
-        exe_path = os.path.abspath(sys.executable)
-        return os.path.basename(os.path.dirname(exe_path)) == "Deck_Coach"
+        exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+        return os.path.basename(exe_dir).lower() == "deck coach"
+
     def create_bootstrap_bat(self, source_exe_path):
         """
         source_exe_path = full path to the currently running exe
         """
-        target_dir = os.path.join(os.getcwd(), "Deck_Coach")
+        source_dir = os.path.dirname(os.path.abspath(source_exe_path))
+        target_dir = os.path.join(source_dir, "Deck Coach")
+
+
         exe_name = os.path.basename(source_exe_path)
         target_exe_path = os.path.join(target_dir, exe_name)
 
@@ -90,11 +96,6 @@ class Bootstrap_Screen(Screen):
     if not errorlevel 1 (
         timeout /t 2 /nobreak >nul
         goto wait
-    )
-
-    REM Ensure target directory exists
-    if not exist "{target_dir}" (
-        mkdir "{target_dir}"
     )
 
     REM Copy EXE to Deck_Coach folder
@@ -217,42 +218,49 @@ class Update_Check_Screen(Screen):
             [os.path.join(os.getcwd(), "update.bat")],
             creationflags=subprocess.CREATE_NEW_CONSOLE
         )
-        sys.exit(0)
+        sleep(1)
+        os._exit(0)
 
     def download_update(self, url):
-        target_folder = os.path.join(os.getcwd(), "Deck_Coach")
-        os.makedirs(target_folder, exist_ok=True)
+        run_dir = os.path.dirname(os.path.abspath(sys.executable))
 
-        exe_path = os.path.join(target_folder, APP_NAME)
+        staging_dir = os.path.join(run_dir, "_update")
+        os.makedirs(staging_dir, exist_ok=True)
+
+        exe_path = os.path.join(staging_dir, APP_NAME)
 
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
             with open(exe_path, "wb") as f:
                 for chunk in r.iter_content(8192):
-                    f.write(chunk)
+                    if chunk:
+                        f.write(chunk)
 
     def create_update_bat(self):
-        exe_name = "Deck_Coach.exe"
-        target_folder = os.getcwd()
-        bat_path = os.path.join(target_folder, "update.bat")
+        exe_name = APP_NAME
+        run_dir = os.path.dirname(os.path.abspath(sys.executable))
+
+        bat_path = os.path.join(run_dir, "update.bat")
 
         with open(bat_path, "w") as f:
             f.write(f"""@echo off
-echo Applying update...
-timeout /t 3 /nobreak >nul
+    echo Applying update...
+    timeout /t 3 /nobreak >nul
 
-:wait
-tasklist /FI "IMAGENAME eq {exe_name}" | find /I "{exe_name}" >nul
-if not errorlevel 1 (
-    timeout /t 2 /nobreak >nul
-    goto wait
-)
+    :wait
+    tasklist /FI "IMAGENAME eq {exe_name}" | find /I "{exe_name}" >nul
+    if not errorlevel 1 (
+        timeout /t 2 /nobreak >nul
+        goto wait
+    )
 
-del /f "{exe_name}"
-move /y "Deck_Coach\\{exe_name}" "{exe_name}"
+    del /f "{exe_name}"
+    move /y "_update\\{exe_name}" "{exe_name}"
 
-del "%~f0"
-""")
+    rmdir /s /q "_update"
+    del "%~f0"
+    """)
+
 # Fully Functional
 class Main_Menu(Screen):
 
@@ -290,15 +298,15 @@ class Main_Menu(Screen):
 
         old_path = '../Decks'
         if os.path.exists(old_path) and os.path.isdir(old_path):
-            print('found it')
             shutil.move(old_path, './')
-            sleep(3)
+            sleep(2)
         if os.path.exists(path) and os.path.isdir(path + '/') == False:
             # Hard Remove, your fault if you put files in my app directory
             os.remove(path)
             os.mkdir(path)
         elif os.path.exists(path) == False:
             os.mkdir(path)
+       
         return os.listdir(path)
         
     def new_deck(self, instance):
@@ -725,6 +733,8 @@ class Life_Counter_Screen(Screen):
         win_btn.bind(on_press=self.end_game)
         lose_btn.bind(on_press=self.end_game)
         back_btn.bind(on_press=self.go_back)
+        Window.bind(on_key_down=self.on_key_down)
+        
 
         layout.add_widget(win_btn)
         layout.add_widget(back_btn)
@@ -732,12 +742,46 @@ class Life_Counter_Screen(Screen):
 
         self.add_widget(layout)
 
+    def on_key_down(self, window, key, scancode, codepoint, modifiers):
+        print(key)
+        if key == 256:
+            self.go_back(key)
+        elif key == 257:
+            self.values['Life'] -= 1
+            self.value_labels['Life'].text = str(self.values['Life'])
+        elif key == 258:
+            self.values['Life'] += 1
+            self.value_labels['Life'].text = str(self.values['Life'])
+        elif key == 260:
+            self.values['Turn'] += 1
+            self.value_labels['Turn'].text = str(self.values['Turn'])
+        elif key == 261:
+            self.values['Draws'] += 1
+            self.value_labels['Draws'].text = str(self.values['Draws'])
+        elif key == 262:
+            self.values['Lands'] += 1
+            self.value_labels['Lands'].text = str(self.values['Lands'])
+        elif key == 263:
+            self.values['Exp'] += 1
+            self.value_labels['Exp'].text = str(self.values['Exp'])
+        elif key == 264:
+            class Win:
+                text = 'Win'
+            self.end_game(Win)
+        elif key == 265:
+            class Lose:
+                text = 'Lose'
+            self.end_game(Lose)
+
+
     def decrement(self, instance):
         name = instance.row_name
+        print(name)
         self.values[name] -= 1
         self.value_labels[name].text = str(self.values[name])
     def increment(self, instance):
         name = instance.row_name
+        print(name)
         self.values[name] += 1
         self.value_labels[name].text = str(self.values[name])
     def go_back(self, instance):
@@ -1479,36 +1523,77 @@ class Edit_Cards_Screen(Add_Cards_Screen):
         if self.card_index is not None:
             self.load_card(self.card_index)
 # Fully Functional
-class View_Tracked_Cards_Stats_Screen(View_Cards_Screen):
+class View_Tracked_Cards_Stats_Screen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-    def open_edit(self, instance):
+    def on_enter(self):
+        self.clear_widgets()
+
+        root_layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+
+        scroll = ScrollView(size_hint=(1, 1))
+
+        list_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            spacing=10
+        )
+        list_layout.bind(minimum_height=list_layout.setter('height'))
+
         app = App.get_running_app()
         dl_path = 'Decks/' + app.deck_name + '/deck_list.json'
         gs_path = 'Decks/' + app.deck_name + '/game_stats.json'
 
         try:
             with open(dl_path, 'r') as file:
-                deck_list = json.load(file)
+                self.deck_list = json.load(file)
             with open(gs_path, 'r') as file:
-                games_list = json.load(file)
-        except:
+                self.games_list = json.load(file)
+        except Exception as e:
+            print(e)
             self.manager.current = 'view_stats_menu'
             return
+
+        for index, card in enumerate(self.deck_list):
+            if 'tracked' in card and card['tracked'] == True:
+                btn = Button(
+                    text=card['name'],
+                    size_hint_y=None,
+                    height=40
+                )
+                btn.card_index = index
+                btn.bind(on_press=self.view_tracked_card_stats)
+
+                list_layout.add_widget(btn)
+
+        scroll.add_widget(list_layout)
+
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        back_btn.bind(on_press=self.go_back)
+
+        root_layout.add_widget(scroll)
+        root_layout.add_widget(back_btn)
+
+        self.add_widget(root_layout)
+
+    def go_back(self, instatnce):
+        self.manager.current = 'view_stats_menu'
+
+    def view_tracked_card_stats(self, instance):
 
         win_rate_list = []
         win_turn_list = []
 
-        for game in games_list:
+        for game in self.games_list:
             if game['result'] == 'Win':
                 win_turn_list.append(game['Turn'])
                 win_rate_list.append(1)
             else: win_rate_list.append(0)
 
         card_index = instance.card_index
-        if 0 <= card_index < len(deck_list):
-            card = deck_list[card_index]
+        if 0 <= card_index < len(self.deck_list):
+            card = self.deck_list[card_index]
 
         if sum(win_rate_list) != 0 and win_rate_list != []:
             win_rate_average = (sum(win_rate_list) / len(win_rate_list)) * 100
@@ -1645,7 +1730,7 @@ class Goldfish_Stats_Menu(Game_Stats_Menu):
         return average_lst
     
 
-CURRENT_VERSION = "2.0.0"
+CURRENT_VERSION = "2.0.1"
 HARM_MESSAGE = 'Devs at Schwandtsylvania are proud to bring you a new GUI version of deck coach with fancy screens and buttons!\n' \
 'Your auto updater should take care of everything for you!' \
 'Just be sure to re run the app if it closes the first time'
@@ -1655,8 +1740,8 @@ REPO = "Deck_Coach"
 APP_NAME = "Deck_Coach.exe"
 
 ############################### CHANGE LOG #########################################
-   # use json for goldfish stats
-   # gui ready for use!
+   # View tracked cards now only shows tracked cards.
+   # Added hot keys to Life Counter
 ####################################################################################
 
 ################################## TODO ############################################
@@ -1670,6 +1755,8 @@ APP_NAME = "Deck_Coach.exe"
     # add feature to view games played in Deck Coach 
         #need to be able to delete bad stats that might be stored in game stats
     # ship to andriod
+    # add option to view tags and edit
+    # add hot keys for menu and game buttons
 ####################################################################################  
 
 
