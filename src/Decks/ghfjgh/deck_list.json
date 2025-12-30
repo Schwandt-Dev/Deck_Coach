@@ -8,14 +8,31 @@
         ],
         "tracking": {
             "wins": [
+                1,
+                1,
+                0,
+                1,
+                0,
+                1,
                 1
             ],
             "win_turns": [
+                0,
+                0,
+                0,
+                0,
                 0
             ],
             "survey": [
+                5,
+                5,
+                5,
+                2,
+                1,
                 5
-            ]
+            ],
+            "games_played": 4,
+            "dead_card": 2
         },
         "tracked": true
     },

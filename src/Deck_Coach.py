@@ -788,7 +788,7 @@ class Life_Counter_Screen(Screen):
         self.manager.current = 'deck_menu'
     
     def end_game(self, instance):
-        result = instance.text
+        self.result = instance.text
 
         # ---- save game stats ----
         try:
@@ -797,7 +797,7 @@ class Life_Counter_Screen(Screen):
         except:
             games_list = []
 
-        game = {'result': result}
+        game = {'result': self.result}
         game.update(self.values)
         games_list.append(game)
 
@@ -816,14 +816,7 @@ class Life_Counter_Screen(Screen):
         self.tracked_cards = [
             card for card in self.deck_list
             if card.get('tracked', False)
-        ]
-
-        # ---- log win/loss stats ----
-        for card in self.tracked_cards:
-            card.setdefault('tracking', {'wins': [], 'win_turns': [], 'survey': []})
-            card['tracking']['wins'].append(1 if result == 'Win' else 0)
-            if result == 'Win':
-                card['tracking']['win_turns'].append(self.values['Turn'])
+        ]   
 
         self.current_card_index = 0
 
@@ -836,6 +829,11 @@ class Life_Counter_Screen(Screen):
         self.clear_widgets()
 
         self.card = self.tracked_cards[self.current_card_index]
+        if 'games_played' in self.card['tracking']:
+            self.card['tracking']['games_played'] += 1
+        else:
+            self.card['tracking']['games_played'] = 1
+
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         label = Label(
@@ -845,18 +843,28 @@ class Life_Counter_Screen(Screen):
 
         yes_btn = Button(text='Yes', size_hint=(1, None), height=50)
         no_btn = Button(text='No', size_hint=(1, None), height=50)
+        dead_btn = Button(text='Chose not to play / Did not play', size_hint=(1, None), height=50)
 
         yes_btn.bind(on_press=self.ask_rating)
         no_btn.bind(on_press=self.next_card)
+        dead_btn.bind(on_press=self.next_card)
 
         layout.add_widget(label)
         layout.add_widget(yes_btn)
         layout.add_widget(no_btn)
+        layout.add_widget(dead_btn)
 
         self.add_widget(layout)
 
     def ask_rating(self, instance):
         self.clear_widgets()
+
+        # record stats if the card was played.
+        self.card['tracking']['wins'].append(1 if self.result == 'Win' else 0)
+        if self.result == 'Win':
+            self.card['tracking']['win_turns'].append(self.values['Turn'])
+
+        
 
         layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
         label = Label(
@@ -879,8 +887,14 @@ class Life_Counter_Screen(Screen):
         self.next_card(instance)
 
     def next_card(self, instance):
-        self.current_card_index += 1
+        # track how many times a card is available but can not be played or is not played.
+        if 'Did not play' in instance.text:
+            if 'dead_card' in self.card['tracking']:
+                self.card['tracking']['dead_card'] += 1
+            else:
+                self.card['tracking']['dead_card'] = 1
 
+        self.current_card_index += 1
         if self.current_card_index < len(self.tracked_cards):
             self.ask_played_card()
         else:
