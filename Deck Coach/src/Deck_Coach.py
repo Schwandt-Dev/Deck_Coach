@@ -1272,6 +1272,9 @@ class Add_Cards_Screen(Screen):
             text="Enter each tag separated by a comma ',' (TAB to autocomplete)",
             font_size=20
         )
+        genereic_tags_label = Label(text='Recommended generic tags include card draw, card advantage, ramp, land, creature removal,', 
+                                    font_size=20)
+        genereic_tags_label_pt2 = Label(text='artifact removal, enchantment removal, land removal, planeswalker removal', font_size=20)
         self.tags_text = TextInput(multiline=True, size_hint=(1, None), height=80)
 
         # Hook for tab completion
@@ -1293,6 +1296,8 @@ class Add_Cards_Screen(Screen):
         self.main_layout.add_widget(self.name_text)
         self.main_layout.add_widget(tags_label)
         self.main_layout.add_widget(instructions_label)
+        self.main_layout.add_widget(genereic_tags_label)
+        self.main_layout.add_widget(genereic_tags_label_pt2)
         self.main_layout.add_widget(self.tags_text)
         
         btn_layout = BoxLayout(orientation='horizontal', spacing=10, size_hint=(1, None), height=50)
@@ -1320,13 +1325,18 @@ class Add_Cards_Screen(Screen):
     def load_existing_tags(self):
         """Load tags from existing deck_list.json"""
         self.known_tags.clear()
+        generic_tags = ['ramp', 'land', 'creature removal', 'artifact removal',
+                                 'enchantment removal', 'land removal', 'planeswalker removal', 'card draw', 'card advantage']
         try:
             with open(self.path, 'r') as file:
                 deck_list = json.load(file)
                 for card in deck_list:
                     for tag in card.get('tags', []):
                         self.known_tags.add(tag.lower())
+                for tag in generic_tags:
+                    self.known_tags.add(tag)
         except:
+            self.known_tags = generic_tags
             pass
 
     def _on_key_down(self, window, key, scancode, codepoint, modifiers):
@@ -1756,6 +1766,8 @@ APP_NAME = "Deck_Coach.exe"
 ############################### CHANGE LOG #########################################
    # View tracked cards now only shows tracked cards.
    # Added hot keys to Life Counter
+   # Life counter only loggs games for cards when they are played.
+   # Added generic tags with tab completion for future card analysis
 ####################################################################################
 
 ################################## TODO ############################################
@@ -1769,8 +1781,7 @@ APP_NAME = "Deck_Coach.exe"
     # add feature to view games played in Deck Coach 
         #need to be able to delete bad stats that might be stored in game stats
     # ship to andriod
-    # add option to view tags and edit
-    # add hot keys for menu and game buttons
+    # add option to filter view of cards by tags
 ####################################################################################  
 
 
