@@ -44,6 +44,7 @@ class Deck_Coach(App):
         sm.add_widget(View_Tracked_Cards_Stats_Screen(name='view_tracked_cards_stats_screen'))
         sm.add_widget(Update_Check_Screen(name='update_check'))
         sm.add_widget(Bootstrap_Screen(name='bootstrap'))
+        sm.add_widget(Cut_Recommendation_Screen(name='cut_recommendation_screen'))
         
 
         sm.current = 'main'
@@ -356,6 +357,7 @@ class Deck_Menu_Screen(Screen):
         life_counter_btn = Button(text='Life Counter', size_hint=(1, None), height=50)
         view_stats_btn = Button(text='View Stats', size_hint=(1, None), height=50)
         deck_list_btn = Button(text='Deck List', size_hint=(1, None), height = 50)
+        cut_recs_btn = Button(text='Cut Recommendations', size_hint=(1, None), height=50)
         back_btn = Button(text='Back', size_hint=(1, None), height=50)
         delete_btn = Button(text='Delete Deck', size_hint=(1, None), height = 50)
 
@@ -363,6 +365,7 @@ class Deck_Menu_Screen(Screen):
         layout.add_widget(life_counter_btn)
         layout.add_widget(view_stats_btn)
         layout.add_widget(deck_list_btn)
+        layout.add_widget(cut_recs_btn)
         layout.add_widget(back_btn)
         layout.add_widget(delete_btn)
 
@@ -370,6 +373,7 @@ class Deck_Menu_Screen(Screen):
         life_counter_btn.bind(on_press=self.goto_life_counter)
         view_stats_btn.bind(on_press=self.goto_view_stats)
         deck_list_btn.bind(on_press=self.goto_deck_list)
+        cut_recs_btn.bind(on_press=self.goto_cut_recs)
         back_btn.bind(on_press=self.go_back)
         delete_btn.bind(on_press=self.goto_warning)
 
@@ -383,6 +387,8 @@ class Deck_Menu_Screen(Screen):
         self.manager.current = 'view_stats_menu'
     def goto_deck_list(self, instance):
         self.manager.current = 'deck_list_menu'
+    def goto_cut_recs(self, instance):
+        self.manager.current = 'cut_recommendation_screen'
     def go_back(self, instance):
         self.manager.current = 'main'
     def goto_warning(self, instance):
@@ -1336,7 +1342,7 @@ class Add_Cards_Screen(Screen):
                 for tag in generic_tags:
                     self.known_tags.add(tag)
         except:
-            self.known_tags = generic_tags
+            self.known_tags = set(generic_tags)
             pass
 
     def _on_key_down(self, window, key, scancode, codepoint, modifiers):
@@ -1806,7 +1812,58 @@ class Goldfish_Stats_Menu(Game_Stats_Menu):
             average_lst = sum(lst) / len(lst)
         else: average_lst = 0
         return average_lst
-    
+
+class Cut_Recommendation_Screen(Screen):
+    def on_enter(self):
+        app = App.get_running_app()
+        gs_path = 'Decks/' + app.deck_name + '/game_stats.json'
+        ds_path = 'Decks/' + app.deck_name + '/deck_list.json'
+
+        try:
+            with open(gs_path, 'r') as file:
+                gs_stats = json.load(file)
+            with open(ds_path, 'r') as file:
+                deck_list = json.load(file)
+                if len(deck_list) != 100:
+                    self.error_screen(2)           
+        except:
+            self.error_screen(1)
+
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        veggies_btn = Button(text='Veggies', size_hint=(1, None), height=50)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        veggies_btn.bind(on_press=self.cut_veggies)
+        back_btn.bind(on_press=self.go_back)
+
+    def cut_veggies(self, instance):
+        #identify veggies
+        #see if ratio is met
+        #make recommendations accordingly
+        pass
+
+    def error_screen(self, code):
+        self.clear_widgets()
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+
+        if code == 1:
+            error_label = Label(text='Unable to open one or more files to make recommendations.', font_size=24)
+            error_label_pt2 = Label(text='Ensure your deck list is added and that you have logged games with the life counter.', font_size=24)
+        elif code == 2:
+            error_label = Label(text='Detected a deck list not equal to 100 cards', font_size=24)
+            error_label_pt2 = Label(text='Recommendations can not be accurate for decks that do not conform to 100 cards.', font_size=24)
+        back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        layout.add_widget(error_label)
+        layout.add_widget(error_label_pt2)
+        layout.add_widget(back_btn)
+        self.add_widget(layout)
+
+        back_btn.bind(on_press=self.go_back)
+
+    def go_back(self, instance):
+        self.manager.current = 'deck_menu'
+
+
+    pass    
 
 CURRENT_VERSION = "2.0.1"
 HARM_MESSAGE = 'Devs at Schwandtsylvania are proud to bring you a new GUI version of deck coach with fancy screens and buttons!\n' \
@@ -1822,6 +1879,7 @@ APP_NAME = "Deck_Coach.exe"
    # Added hot keys to Life Counter
    # Life counter only loggs games for cards when they are played.
    # Added generic tags with tab completion for future card analysis
+   # Added option to filter cards by tags in View Cards menu
 ####################################################################################
 
 ################################## TODO ############################################
@@ -1833,9 +1891,8 @@ APP_NAME = "Deck_Coach.exe"
             # sub sort by cost high to low
         # identify veggies (card draw, removal) and remove from the chopping block
     # add feature to view games played in Deck Coach 
-        #need to be able to delete bad stats that might be stored in game stats
+        # need to be able to delete/edit bad stats that might be stored in game stats
     # ship to andriod
-    # add option to filter view of cards by tags
 ####################################################################################  
 
 
