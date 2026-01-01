@@ -49,6 +49,7 @@ class Deck_Coach(App):
 
         sm.current = 'main'
         #sm.current = 'bootstrap'
+        #sm.current = 'update_check'
         return sm
     
  
@@ -829,7 +830,7 @@ class Life_Counter_Screen(Screen):
         if self.tracked_cards:
             self.ask_played_card()
         else:
-            self.finish_tracking()
+            self.shoutout()
 
     def ask_played_card(self):
         self.clear_widgets()
@@ -904,13 +905,86 @@ class Life_Counter_Screen(Screen):
         if self.current_card_index < len(self.tracked_cards):
             self.ask_played_card()
         else:
-            self.finish_tracking()
+            self.shoutout()
 
-    def finish_tracking(self):
+    def finish_tracking(self, instance):
+
+        shouted_list = []
+        textbox_list = self.textbox.text.split(',')
+        for name in textbox_list:
+            shouted_list.append(name.strip())
+        for card in self.deck_list:
+            if card['name'] in shouted_list:
+                if 'shoutout' in card:
+                    card['shoutout'] += 1
+                else: card['shoutout'] = 1
+
         with open(self.decklist_path, 'w') as file:
             json.dump(self.deck_list, file, indent=4)
 
         self.manager.current = 'deck_menu'
+
+
+    def shoutout(self):
+        self.clear_widgets()
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+
+        shoutout_label = Label(
+            text="Are there any cards from this match that deserve a special shoutout? Separate each with a ','",
+            font_size=22
+        )
+
+        card_list = [card['name'] for card in self.deck_list]
+
+        self.textbox = AutoCompleteTextInput(
+            card_list=card_list,
+            multiline=False,
+            size_hint=(1, None),
+            height=40
+        )
+
+        submit_btn = Button(text="Submit", size_hint=(1, None), height=50)
+        submit_btn.bind(on_press=self.finish_tracking)
+
+        layout.add_widget(shoutout_label)
+        layout.add_widget(self.textbox)
+        layout.add_widget(submit_btn)
+        self.add_widget(layout)
+
+class AutoCompleteTextInput(TextInput):
+
+    def __init__(self, card_list=None, **kwargs):
+        super().__init__(**kwargs)
+        self.card_list = card_list or []
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        # keycode = (number, 'tab')
+        if keycode[1] == 'tab':
+            self.autocomplete()
+            return True   # 🚨 THIS stops focus change
+
+        return super().keyboard_on_key_down(window, keycode, text, modifiers)
+
+    def autocomplete(self):
+        text = self.text
+
+        parts = [p.strip() for p in text.split(',')]
+        current = parts[-1]
+
+        if not current:
+            return
+
+        matches = [
+            card for card in self.card_list
+            if card.lower().startswith(current.lower())
+        ]
+
+        if not matches:
+            return
+
+        parts[-1] = matches[0]
+        self.text = ', '.join(parts)
+        self.cursor = (len(self.text), 0)
 # Fully Functional
 class Goldfish_Screen(Screen):
     def __init__(self, **kwargs):
@@ -1812,7 +1886,7 @@ class Goldfish_Stats_Menu(Game_Stats_Menu):
             average_lst = sum(lst) / len(lst)
         else: average_lst = 0
         return average_lst
-
+# In Development
 class Cut_Recommendation_Screen(Screen):
     def on_enter(self):
         app = App.get_running_app()
@@ -1866,9 +1940,9 @@ class Cut_Recommendation_Screen(Screen):
     pass    
 
 CURRENT_VERSION = "2.0.1"
-HARM_MESSAGE = 'Devs at Schwandtsylvania are proud to bring you a new GUI version of deck coach with fancy screens and buttons!\n' \
-'Your auto updater should take care of everything for you!' \
-'Just be sure to re run the app if it closes the first time'
+HARM_MESSAGE = 'The Gnomes here a Schwandtsylvania have been working very hard to bring you a new update.\n' \
+'They await your feedback with longing in their bellies (We promise to feed them if you like it)\n' \
+'As always be sure to report any bugs to your local gnome supervisor so we can identify the responsible gnome.'
 
 OWNER = "Schwandt-Dev"
 REPO = "Deck_Coach"
@@ -1880,6 +1954,7 @@ APP_NAME = "Deck_Coach.exe"
    # Life counter only loggs games for cards when they are played.
    # Added generic tags with tab completion for future card analysis
    # Added option to filter cards by tags in View Cards menu
+   # Added card shoutout option to life counter
 ####################################################################################
 
 ################################## TODO ############################################

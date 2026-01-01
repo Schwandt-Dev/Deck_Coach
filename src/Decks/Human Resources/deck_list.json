@@ -3,12 +3,21 @@
         "name": "bbbb",
         "tags": [
             "bbbb"
-        ]
+        ],
+        "shoutout": 1
     },
     {
         "name": "aaa",
         "tags": [
             "aaa"
-        ]
+        ],
+        "shoutout": 3
+    },
+    {
+        "name": "aaaaaaaaaa",
+        "tags": [
+            "asdfasdf"
+        ],
+        "shoutout": 8
     }
 ]
