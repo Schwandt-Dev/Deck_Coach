@@ -931,7 +931,7 @@ class Life_Counter_Screen(Screen):
 
         shoutout_label = Label(
             text="Are there any cards from this match that deserve a special shoutout? Separate each with a ','",
-            font_size=22
+            font_size=20
         )
 
         card_list = [card['name'] for card in self.deck_list]
@@ -1897,8 +1897,8 @@ class Cut_Recommendation_Screen(Screen):
             with open(gs_path, 'r') as file:
                 gs_stats = json.load(file)
             with open(ds_path, 'r') as file:
-                deck_list = json.load(file)
-                if len(deck_list) != 100:
+                self.deck_list = json.load(file)
+                if len(self.deck_list) != 100:
                     self.error_screen(2)           
         except:
             self.error_screen(1)
@@ -1909,11 +1909,54 @@ class Cut_Recommendation_Screen(Screen):
         veggies_btn.bind(on_press=self.cut_veggies)
         back_btn.bind(on_press=self.go_back)
 
+        layout.add_widget(veggies_btn)
+        layout.add_widget(back_btn)
+        self.add_widget(layout)
+
     def cut_veggies(self, instance):
-        #identify veggies
-        #see if ratio is met
-        #make recommendations accordingly
+        lands = []
+        removal = []
+        ramp = []
+        card_advantage = []
+        card_draw = []
+        
+        for card in self.deck_list:
+            if 'land' in card['tags']:
+                lands.append(card)
+            if 'card_advantage' in card['tags']:
+                card_advantage.append(card)
+            if 'card_draw' in card['tags']:
+                card_draw.append(card)
+            if 'ramp' in card['tags']:
+                ramp.append(card)
+            for tag in card['tags']:
+                if 'removal' in tag:
+                    removal.append(card)
+                    break
+
+        self.veggies_list = [lands, removal, ramp, card_advantage, card_draw]
+        
+        rec_index = 0
+        self.create_recs()
         pass
+    def create_recs(self):
+        recs_list = []
+
+        # Check land count
+        if len(self.veggies_list[0]) < 35:
+            rec_text = f'Your deck has {len(self.veggies_list[0])} cards taged as land which is low for most decks.'
+            recs_list.append(rec_text) 
+        elif len(self.veggies_list[0]) > 39:
+            rec_text = f'Your deck has {len(self.veggies_list[0])} cards taged as land which is high for most decks'
+            recs_list.append(rec_text)
+
+        if len(self.veggies_list[0]) < 30:
+            rec_text = f'Your deck contains {len(self.veggies_list[1])} pieces of removal. Consider adding more.'
+
+    def next_rec(self, instance):
+        rec_label = Label(text=self.rec_text, font_size=22)
+        next_btn = Button()
+
 
     def error_screen(self, code):
         self.clear_widgets()
@@ -1921,10 +1964,10 @@ class Cut_Recommendation_Screen(Screen):
 
         if code == 1:
             error_label = Label(text='Unable to open one or more files to make recommendations.', font_size=24)
-            error_label_pt2 = Label(text='Ensure your deck list is added and that you have logged games with the life counter.', font_size=24)
+            error_label_pt2 = Label(text='Ensure your deck list is added and that you have logged games with the life counter.', font_size=21)
         elif code == 2:
             error_label = Label(text='Detected a deck list not equal to 100 cards', font_size=24)
-            error_label_pt2 = Label(text='Recommendations can not be accurate for decks that do not conform to 100 cards.', font_size=24)
+            error_label_pt2 = Label(text='Recommendations can not be accurate for decks that do not conform to 100 cards.', font_size=21)
         back_btn = Button(text='Back', size_hint=(1, None), height=50)
         layout.add_widget(error_label)
         layout.add_widget(error_label_pt2)
@@ -1968,6 +2011,7 @@ APP_NAME = "Deck_Coach.exe"
     # add feature to view games played in Deck Coach 
         # need to be able to delete/edit bad stats that might be stored in game stats
     # ship to andriod
+    # add error screens to try except blocks on errors that would return to a previous screen.
 ####################################################################################  
 
 
