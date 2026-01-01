@@ -1398,7 +1398,7 @@ class Add_Cards_Screen(Screen):
 
     def go_back(self, instance):
         self.manager.current = 'deck_list_menu'
-# Fully Functional
+# Finish sort cards by tag function ***************************
 class View_Cards_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
@@ -1417,12 +1417,16 @@ class View_Cards_Screen(Screen):
 
         scroll = ScrollView(size_hint=(1, 1))
 
-        list_layout = BoxLayout(
+        self.list_layout = BoxLayout(
             orientation='vertical',
             size_hint_y=None,
             spacing=10
         )
-        list_layout.bind(minimum_height=list_layout.setter('height'))
+        self.list_layout.bind(minimum_height=self.list_layout.setter('height'))
+
+        self.sort_btn = Button(text='Sort Tags', size_hint=(1, None), height=50)
+        self.sort_btn.bind(on_press=self.sort_cards)
+        root_layout.add_widget(self.sort_btn)
 
         for index, card in enumerate(deck_list):
             btn = Button(
@@ -1433,9 +1437,9 @@ class View_Cards_Screen(Screen):
             btn.card_index = index
             btn.bind(on_press=self.open_edit)
 
-            list_layout.add_widget(btn)
+            self.list_layout.add_widget(btn)
 
-        scroll.add_widget(list_layout)
+        scroll.add_widget(self.list_layout)
 
         back_btn = Button(text='Back', size_hint=(1, None), height=50)
         back_btn.bind(on_press=self.go_back)
@@ -1452,6 +1456,36 @@ class View_Cards_Screen(Screen):
 
     def go_back(self, instance):
         self.manager.current = 'deck_list_menu'
+    def sort_cards(self, instance):
+        if instance.text == 'Sort Tags':
+            self.sort_btn.text = 'Sort Names'
+            self.list_layout.clear_widgets()
+            app = App.get_running_app()
+            path = f'Decks/{app.deck_name}/deck_list.json'
+            with open(path, 'r') as file:
+                deck_list = json.load(file)
+
+            tags_list = set()
+            for card in deck_list:
+                tmp_tag_list = card['tags']
+                for tag in tmp_tag_list:
+                    tags_list.add(tag)
+            tags_list = list(tags_list)
+            for tag in tags_list:
+                btn = Button(text=tag, size_hint=(1, None), height=40)
+                btn.bind(on_press=self.display_cards_by_tag)
+                self.list_layout.add_widget(btn)
+
+        else:
+            self.on_enter()
+    def display_cards_by_tag(self, instance):
+
+        ########################################################
+
+        #                       TODO
+
+        ########################################################
+        pass
 # Fully Functional
 class Edit_Cards_Screen(Add_Cards_Screen):
     def __init__(self, **kwargs):
