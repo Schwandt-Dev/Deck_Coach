@@ -1398,7 +1398,7 @@ class Add_Cards_Screen(Screen):
 
     def go_back(self, instance):
         self.manager.current = 'deck_list_menu'
-# Finish sort cards by tag function ***************************
+# Fully Functional
 class View_Cards_Screen(Screen):
     def on_enter(self):
         self.clear_widgets()
@@ -1441,11 +1441,11 @@ class View_Cards_Screen(Screen):
 
         scroll.add_widget(self.list_layout)
 
-        back_btn = Button(text='Back', size_hint=(1, None), height=50)
-        back_btn.bind(on_press=self.go_back)
+        self.back_btn = Button(text='Back', size_hint=(1, None), height=50)
+        self.back_btn.bind(on_press=self.go_back)
 
         root_layout.add_widget(scroll)
-        root_layout.add_widget(back_btn)
+        root_layout.add_widget(self.back_btn)
 
         self.add_widget(root_layout)
 
@@ -1457,7 +1457,12 @@ class View_Cards_Screen(Screen):
     def go_back(self, instance):
         self.manager.current = 'deck_list_menu'
     def sort_cards(self, instance):
-        if instance.text == 'Sort Tags':
+        try:
+            self.back_btn.unbind(on_press=self.sort_cards)
+            self.back_btn.bind(on_press=self.go_back)
+        except:
+            pass
+        if instance.text == 'Sort Tags' or instance.text == 'Back':
             self.sort_btn.text = 'Sort Names'
             self.list_layout.clear_widgets()
             app = App.get_running_app()
@@ -1475,17 +1480,32 @@ class View_Cards_Screen(Screen):
                 btn = Button(text=tag, size_hint=(1, None), height=40)
                 btn.bind(on_press=self.display_cards_by_tag)
                 self.list_layout.add_widget(btn)
+            
 
         else:
             self.on_enter()
     def display_cards_by_tag(self, instance):
+        app = App.get_running_app()
+        path = f'Decks/{app.deck_name}/deck_list.json'
 
-        ########################################################
+        self.list_layout.clear_widgets()
+        self.back_btn.unbind(on_press=self.go_back)
+        self.back_btn.bind(on_press=self.sort_cards)
+        pattern_tag = instance.text
+        with open(path, 'r') as file:
+            deck_list = json.load(file)
 
-        #                       TODO
+        for index, card in enumerate(deck_list):
+            if pattern_tag in card['tags']:
+                btn = Button(
+                text=card['name'],
+                size_hint_y=None,
+                height=40
+                )
+                btn.card_index = index
+                btn.bind(on_press=self.open_edit)
 
-        ########################################################
-        pass
+                self.list_layout.add_widget(btn)
 # Fully Functional
 class Edit_Cards_Screen(Add_Cards_Screen):
     def __init__(self, **kwargs):
